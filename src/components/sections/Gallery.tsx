@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 interface GalleryImage {
   src: string;
@@ -8,39 +9,44 @@ interface GalleryImage {
   category: "venue" | "food" | "drinks" | "vibes";
 }
 
-// Placeholder images - replace with actual Bethel Bellini photos
 const galleryImages: GalleryImage[] = [
-  { src: "/gallery/venue-1.jpg", alt: "Beach club vista", category: "venue" },
-  { src: "/gallery/venue-2.jpg", alt: "Pool area", category: "venue" },
-  { src: "/gallery/venue-3.jpg", alt: "Lounge seating", category: "venue" },
-  { src: "/gallery/venue-4.jpg", alt: "Ocean view", category: "venue" },
-  { src: "/gallery/food-1.jpg", alt: "Ceviche", category: "food" },
-  { src: "/gallery/food-2.jpg", alt: "Seafood platter", category: "food" },
-  { src: "/gallery/food-3.jpg", alt: "Grilled fish", category: "food" },
-  { src: "/gallery/food-4.jpg", alt: "Risotto negro", category: "food" },
-  { src: "/gallery/drinks-1.jpg", alt: "Cocktails", category: "drinks" },
   {
-    src: "/gallery/drinks-2.jpg",
-    alt: "Champagne service",
-    category: "drinks",
+    src: "/gallery/venue-1.jpg",
+    alt: "Entrada Bethel Bellini - Letrero dorado",
+    category: "venue",
   },
-  { src: "/gallery/drinks-3.jpg", alt: "Tropical drinks", category: "drinks" },
-  { src: "/gallery/vibes-1.jpg", alt: "Sunset party", category: "vibes" },
-  { src: "/gallery/vibes-2.jpg", alt: "DJ set", category: "vibes" },
-  { src: "/gallery/vibes-3.jpg", alt: "Beach vibes", category: "vibes" },
+  {
+    src: "/gallery/venue-2.jpg",
+    alt: "Muelle de llegada con trono dorado",
+    category: "venue",
+  },
+  {
+    src: "/gallery/venue-3.jpg",
+    alt: "Vista al mar desde la arquitectura de bambú",
+    category: "venue",
+  },
+  {
+    src: "/gallery/vibes-1.jpg",
+    alt: "Ambiente nocturno con iluminación roja",
+    category: "vibes",
+  },
+  {
+    src: "/gallery/food-1.jpg",
+    alt: "Arroz meloso de mariscos",
+    category: "food",
+  },
 ];
 
 const categories = [
   { id: "all", label: "Todo", labelEn: "All" },
   { id: "venue", label: "El Lugar", labelEn: "Venue" },
   { id: "food", label: "Gastronomía", labelEn: "Food" },
-  { id: "drinks", label: "Cócteles", labelEn: "Drinks" },
   { id: "vibes", label: "Ambiente", labelEn: "Vibes" },
 ];
 
 export function Gallery() {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxImage, setLightboxImage] = useState<GalleryImage | null>(null);
 
   const filteredImages =
     activeFilter === "all"
@@ -48,7 +54,7 @@ export function Gallery() {
       : galleryImages.filter((img) => img.category === activeFilter);
 
   return (
-    <section id="gallery" className="py-20 bg-bethel-black">
+    <section id="gallery" className="py-20 bg-bethel-dark">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12">
@@ -79,27 +85,20 @@ export function Gallery() {
         </div>
 
         {/* Gallery Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {filteredImages.map((image, index) => (
             <div
               key={index}
-              onClick={() => setLightboxImage(image.src)}
+              onClick={() => setLightboxImage(image)}
               className="aspect-square relative overflow-hidden cursor-pointer group"
             >
-              {/* Placeholder gradient until real images are added */}
-              <div
-                className="absolute inset-0 bg-gradient-to-br from-bethel-cyan/20 via-bethel-dark to-bethel-coral/20
-                           flex items-center justify-center text-white/30 text-xs"
-              >
-                <span className="text-center px-2">{image.alt}</span>
-              </div>
-
-              {/* Uncomment when real images are added */}
-              {/* <img
+              <Image
                 src={image.src}
                 alt={image.alt}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              /> */}
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+                sizes="(max-width: 768px) 50vw, 33vw"
+              />
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
@@ -146,7 +145,7 @@ export function Gallery() {
           onClick={() => setLightboxImage(null)}
         >
           <button
-            className="absolute top-4 right-4 text-white/70 hover:text-white"
+            className="absolute top-4 right-4 text-white/70 hover:text-white z-10"
             onClick={() => setLightboxImage(null)}
           >
             <svg
@@ -163,16 +162,18 @@ export function Gallery() {
               />
             </svg>
           </button>
-          <div className="max-w-4xl max-h-[80vh] flex items-center justify-center">
-            {/* Placeholder - replace with actual image */}
-            <div className="w-96 h-96 bg-gradient-to-br from-bethel-cyan/30 to-bethel-coral/30 flex items-center justify-center text-white/50">
-              Imagen: {lightboxImage}
-            </div>
-            {/* <img
-              src={lightboxImage}
-              alt="Gallery"
-              className="max-w-full max-h-full object-contain"
-            /> */}
+          <div className="relative w-full max-w-4xl max-h-[85vh]">
+            <Image
+              src={lightboxImage.src}
+              alt={lightboxImage.alt}
+              width={1200}
+              height={800}
+              className="object-contain w-full h-full max-h-[85vh]"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <p className="text-center text-white/60 mt-4 text-sm">
+              {lightboxImage.alt}
+            </p>
           </div>
         </div>
       )}

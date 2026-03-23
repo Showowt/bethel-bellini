@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bethel-black: #000000;
+  --bethel-dark: #0a0a0a;
+  --bethel-cyan: #00ffff;
+  --bethel-coral: #e39c9c;
+  --bethel-orange: #ff2800;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bethel-black);
+  color: white;
+  font-family: var(--font-montserrat), sans-serif;
+}
+
+/* Luxury scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bethel-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bethel-cyan);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bethel-coral);
+}
+
+/* Selection */
+::selection {
+  background-color: var(--bethel-cyan);
+  color: var(--bethel-black);
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, var(--bethel-cyan) 0%, var(--bethel-coral) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Shimmer border */
+.shimmer-border {
+  position: relative;
+}
+
+.shimmer-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--bethel-cyan),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+  z-index: -1;
+  border-radius: inherit;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 200% 0; }
+  50% { background-position: -200% 0; }
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+}
+
+/* Button glow */
+.btn-glow {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-glow:hover {
+  box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
+  transform: scale(1.02);
+}
+
+/* Form input styles */
+.input-bethel {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.input-bethel:focus {
+  outline: none;
+  border-color: var(--bethel-cyan);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+}
+
+.input-bethel::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Card flip animation */
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flip-card.flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}

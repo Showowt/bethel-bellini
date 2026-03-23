@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" fill="none">
+  <defs>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00ffff"/>
+      <stop offset="100%" stop-color="#e39c9c"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Main text -->
+  <text x="200" y="50" text-anchor="middle" font-family="Georgia, serif" font-size="36" font-weight="bold" fill="white">
+    BETHEL BELLINI
+  </text>
+
+  <!-- Subtitle -->
+  <text x="200" y="80" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" letter-spacing="8" fill="url(#textGradient)">
+    BEACH CLUB
+  </text>
+
+  <!-- Decorative line -->
+  <line x1="80" y1="95" x2="320" y2="95" stroke="url(#textGradient)" stroke-width="1"/>
+
+  <!-- Location -->
+  <text x="200" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" letter-spacing="3" fill="rgba(255,255,255,0.5)">
+    ISLA TIERRA BOMBA
+  </text>
+</svg>

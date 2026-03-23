@@ -32,10 +32,11 @@ export function Navigation() {
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
           {/* Logo */}
           <a href="#" className="flex items-center">
-            <span className="text-xl font-bold tracking-wider">
-              <span className="text-white">BETHEL</span>
-              <span className="text-bethel-cyan"> BELLINI</span>
-            </span>
+            <img
+              src="/logo.svg"
+              alt="Bethel Bellini Beach Club"
+              className="h-10 w-auto"
+            />
           </a>
 
           {/* Desktop Nav */}

@@ -7,10 +7,11 @@ export function Footer() {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <h3 className="text-xl font-bold mb-4">
-              <span className="text-white">BETHEL</span>
-              <span className="text-bethel-cyan"> BELLINI</span>
-            </h3>
+            <img
+              src="/logo.svg"
+              alt="Bethel Bellini Beach Club"
+              className="h-12 w-auto mb-4"
+            />
             <p className="text-white/50 text-sm leading-relaxed">
               El Reino del Realismo Mágico. Arquitectura hecha a mano, mar
               abierto al horizonte. Isla Tierra Bomba, Cartagena.

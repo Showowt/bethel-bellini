@@ -207,39 +207,52 @@ const MENU: Record<
 
 const ZONES = [
   {
-    id: "playa",
-    name: "Playa Bellini",
-    icon: "🏖️",
+    id: "camastros-playa",
+    name: "Camastros Playa",
+    sublabel: "Frente al Mar",
     color: "#C4654A",
-    desc: "Frente al mar",
+    capacity: "1-4 personas",
+    features: ["Vista directa al océano", "Servicio prioritario"],
   },
   {
-    id: "piscina",
-    name: "La Piscina",
-    icon: "🏊",
+    id: "piscina-infinity",
+    name: "Piscina Infinity",
+    sublabel: "Área de Pool",
     color: "#2A6B7C",
-    desc: "Infinity pool",
+    capacity: "1-6 personas",
+    features: ["Borde infinito", "Ambiente relajado"],
   },
   {
-    id: "cabanas",
-    name: "Cabañas Privadas",
-    icon: "🛖",
+    id: "palapa-vip",
+    name: "Palapa VIP",
+    sublabel: "Zona Privada",
     color: "#D4923A",
-    desc: "Exclusivo",
+    capacity: "6-12 personas",
+    features: ["Servicio dedicado", "Mesa privada"],
   },
   {
-    id: "bar",
+    id: "bar-principal",
     name: "Bar del Mar",
-    icon: "🍹",
+    sublabel: "Barra Central",
     color: "#3A5E3A",
-    desc: "Barra principal",
+    capacity: "1-4 personas",
+    features: ["Cócteles artesanales", "Ambiente social"],
   },
   {
-    id: "terraza",
-    name: "Terraza Atardecer",
-    icon: "🌅",
-    color: "#7A5A6A",
-    desc: "Vista panorámica",
+    id: "terraza-sunset",
+    name: "Terraza Sunset",
+    sublabel: "Vista Panorámica",
+    color: "#8B5A6A",
+    capacity: "2-8 personas",
+    features: ["Mejor atardecer", "Mesas elevadas"],
+  },
+  {
+    id: "restaurante",
+    name: "Restaurante",
+    sublabel: "Área Gastronómica",
+    color: "#6B5B4F",
+    capacity: "2-10 personas",
+    features: ["Menú completo", "Clima controlado"],
   },
 ];
 
@@ -619,7 +632,7 @@ function OrderContent() {
   }
 
   // ══════════════════════════════════════════════════════════════════
-  // STEP 3: ZONE SELECTION
+  // STEP 3: ZONE SELECTION - Demo-Ready Section Picker
   // ══════════════════════════════════════════════════════════════════
   if (step === "zone" && session) {
     return (
@@ -628,71 +641,267 @@ function OrderContent() {
         <div className="px-5 py-4 border-b border-[var(--bb-line)] flex items-center justify-between">
           <button
             onClick={() => setStep("balance")}
-            className="text-[var(--bb-muted)] text-sm"
+            className="w-8 h-8 rounded-full glass-panel flex items-center justify-center text-[var(--bb-muted)] text-sm"
           >
             ←
           </button>
           <div className="text-center">
-            <div className="text-[11px] font-serif text-[var(--bb-cream)] tracking-[1px]">
+            <div className="text-[12px] font-serif text-[var(--bb-cream)] tracking-[2px]">
               BETHEL BELLINI
             </div>
-            <div className="text-[8px] font-sans text-[var(--bb-sand)]">
-              {fmt(session.balance)}
+            <div className="text-[9px] font-sans text-[var(--bb-sand)] tracking-[1px]">
+              ISLA TIERRA BOMBA
             </div>
           </div>
-          <div className="text-[8px] font-sans font-bold px-2 py-0.5 rounded bg-[rgba(90,158,111,0.12)] text-[var(--bb-ok)]">
-            ISLA OS
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-[var(--bb-ok)] animate-pulse" />
+            <span className="text-[8px] font-sans font-bold text-[var(--bb-ok)]">
+              EN VIVO
+            </span>
           </div>
         </div>
 
-        <div className="flex-1 px-5 py-6">
-          <div className="max-w-sm mx-auto">
-            <div className="text-center mb-8">
-              <h2 className="text-xl font-serif font-light text-[var(--bb-cream)] mb-2">
-                ¿Dónde estás?
+        <div className="flex-1 px-4 py-5 overflow-y-auto">
+          <div className="max-w-md mx-auto">
+            {/* Title Section */}
+            <div className="text-center mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--bb-sand)]" />
+                <span className="text-[9px] font-sans font-semibold text-[var(--bb-sand)] tracking-[1.5px]">
+                  PASO 2 DE 3
+                </span>
+              </div>
+              <h2 className="text-2xl font-serif font-light text-[var(--bb-cream)] mb-2">
+                ¿Dónde te encuentras?
               </h2>
-              <p className="text-[var(--bb-muted)] text-sm font-sans">
-                Selecciona tu zona para que tu pedido llegue directo a ti.
+              <p className="text-[var(--bb-muted)] text-sm font-sans max-w-xs mx-auto">
+                Selecciona tu sección para recibir tu pedido directamente
               </p>
             </div>
 
-            {/* Zone grid */}
-            <div className="space-y-3">
-              {ZONES.map((z) => (
+            {/* Visual Map Header */}
+            <div className="glass-panel rounded-2xl p-4 mb-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[rgba(196,168,130,0.1)] flex items-center justify-center">
+                    <svg
+                      className="w-4 h-4 text-[var(--bb-sand)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                      Mapa del Club
+                    </div>
+                    <div className="text-[var(--bb-muted)] text-[10px] font-sans">
+                      Toca tu ubicación actual
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[var(--bb-sand)] text-xs font-sans font-semibold">
+                    {ZONES.length} zonas
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-[10px] font-sans">
+                    disponibles
+                  </div>
+                </div>
+              </div>
+
+              {/* Mini visual map */}
+              <div
+                className="relative h-16 rounded-xl overflow-hidden"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(42,107,124,0.2) 0%, rgba(196,101,74,0.15) 50%, rgba(212,146,58,0.1) 100%)",
+                }}
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-[var(--bb-ocean)] opacity-60" />
+                    <div className="w-2 h-2 rounded-full bg-[var(--bb-coral)] opacity-60" />
+                    <div className="w-4 h-4 rounded-full bg-[var(--bb-sand)] opacity-40" />
+                    <div className="w-2 h-2 rounded-full bg-[var(--bb-palm)] opacity-60" />
+                    <div className="w-3 h-3 rounded-full bg-[var(--bb-sunset)] opacity-50" />
+                  </div>
+                </div>
+                <div className="absolute bottom-2 left-0 right-0 text-center">
+                  <span className="text-[8px] font-sans text-[var(--bb-cream)] opacity-50 tracking-[2px]">
+                    MAR CARIBE ↓
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Zone Cards Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {ZONES.map((z, idx) => (
                 <button
                   key={z.id}
                   onClick={() => {
                     setSession({ ...session, zone: z.name });
                     setStep("menu");
                   }}
-                  className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 hover:bg-[rgba(196,168,130,0.08)] transition-all text-left"
+                  className="group relative rounded-2xl p-4 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: `linear-gradient(145deg, ${z.color}15 0%, ${z.color}08 100%)`,
+                    border: `1px solid ${z.color}30`,
+                  }}
                 >
+                  {/* Zone indicator */}
                   <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                    className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
                     style={{
                       background: `${z.color}20`,
                       border: `1px solid ${z.color}40`,
                     }}
                   >
-                    {z.icon}
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ background: z.color }}
+                    />
                   </div>
-                  <div className="flex-1">
-                    <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                      {z.name}
-                    </div>
-                    <div className="text-[var(--bb-muted)] text-xs font-sans">
-                      {z.desc}
-                    </div>
+
+                  {/* Zone info */}
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold mb-0.5 leading-tight">
+                    {z.name}
                   </div>
-                  <span className="text-[var(--bb-sand)] text-sm">→</span>
+                  <div
+                    className="text-[10px] font-sans font-medium mb-2"
+                    style={{ color: z.color }}
+                  >
+                    {z.sublabel}
+                  </div>
+
+                  {/* Capacity badge */}
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full glass-panel">
+                    <svg
+                      className="w-2.5 h-2.5 text-[var(--bb-muted)]"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    <span className="text-[9px] font-sans text-[var(--bb-muted)]">
+                      {z.capacity}
+                    </span>
+                  </div>
+
+                  {/* Hover arrow */}
+                  <div
+                    className="absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ background: `${z.color}30` }}
+                  >
+                    <span style={{ color: z.color }} className="text-xs">
+                      →
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>
 
-            {/* Help text */}
-            <p className="text-[var(--bb-muted)] text-[11px] font-sans text-center mt-6">
-              Nuestro runner llevará tu pedido directamente a tu ubicación.
-            </p>
+            {/* Quick Selection for QR */}
+            <div className="glass-panel rounded-2xl p-4 mb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[rgba(196,168,130,0.1)] flex items-center justify-center">
+                  <svg
+                    className="w-5 h-5 text-[var(--bb-sand)]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"
+                    />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                    ¿Tienes código QR?
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-[11px] font-sans">
+                    Escanea el código de tu mesa o camastro
+                  </div>
+                </div>
+                <button
+                  className="px-3 py-2 rounded-lg text-[10px] font-sans font-semibold text-[var(--bb-sand)]"
+                  style={{
+                    background: "rgba(196,168,130,0.1)",
+                    border: "1px solid rgba(196,168,130,0.2)",
+                  }}
+                >
+                  Escanear
+                </button>
+              </div>
+            </div>
+
+            {/* Runner info */}
+            <div className="flex items-center justify-center gap-2 py-3">
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 rounded-full bg-[var(--bb-coral)] flex items-center justify-center text-[10px] text-white font-bold border-2 border-[var(--bb-void)]">
+                  M
+                </div>
+                <div className="w-6 h-6 rounded-full bg-[var(--bb-ocean)] flex items-center justify-center text-[10px] text-white font-bold border-2 border-[var(--bb-void)]">
+                  J
+                </div>
+                <div className="w-6 h-6 rounded-full bg-[var(--bb-palm)] flex items-center justify-center text-[10px] text-white font-bold border-2 border-[var(--bb-void)]">
+                  A
+                </div>
+              </div>
+              <p className="text-[var(--bb-muted)] text-[11px] font-sans">
+                <span className="text-[var(--bb-ok)]">3 runners</span> activos
+                para entrega inmediata
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Balance Footer */}
+        <div
+          className="px-4 py-3 border-t border-[var(--bb-line)]"
+          style={{ background: "var(--bb-earth)" }}
+        >
+          <div className="max-w-md mx-auto flex items-center justify-between">
+            <div>
+              <div className="text-[var(--bb-muted)] text-[9px] font-sans tracking-[1px]">
+                TU SALDO
+              </div>
+              <div className="text-[var(--bb-sand)] text-lg font-sans font-bold">
+                {fmt(session.balance)}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="text-[8px] font-sans text-[var(--bb-muted)]">
+                Banda
+              </div>
+              <div className="px-2 py-1 rounded glass-panel text-[var(--bb-cream)] text-[10px] font-sans font-semibold">
+                {session.bandId}
+              </div>
+            </div>
           </div>
         </div>
       </div>

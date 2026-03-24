@@ -311,10 +311,12 @@ function OrderContent() {
     };
   }, []);
 
-  // Auto-skip to zone if coming from QR with zone param
+  // Auto-set zone if coming from QR with zone param (after check-in)
+  const hasSetZoneRef = useRef(false);
   useEffect(() => {
-    if (initialZone && session && !session.zone) {
-      setSession({ ...session, zone: initialZone });
+    if (initialZone && session && !session.zone && !hasSetZoneRef.current) {
+      hasSetZoneRef.current = true;
+      setSession((prev) => (prev ? { ...prev, zone: initialZone } : prev));
       setStep("menu");
     }
   }, [initialZone, session]);

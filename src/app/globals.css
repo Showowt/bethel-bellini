@@ -2,140 +2,114 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+
 :root {
-  --bethel-black: #000000;
-  --bethel-dark: #0a0a0a;
-  --bethel-cyan: #00ffff;
-  --bethel-coral: #e39c9c;
-  --bethel-orange: #ff2800;
+  --bb-void: #0A0907;
+  --bb-earth: #121010;
+  --bb-bark: #1E1A15;
+  --bb-wood: #2C261E;
+  --bb-sand: #C4A878;
+  --bb-sand-mid: #A8926C;
+  --bb-cream: #F0E6D4;
+  --bb-white: #FAF6EF;
+  --bb-muted: #847862;
+  --bb-line: rgba(196,168,130,0.10);
+  --bb-faint: rgba(196,168,130,0.06);
+  --bb-ocean: #2A6B7C;
+  --bb-coral: #C4654A;
+  --bb-ok: #5A9E6F;
+  --bb-warn: #C49A3A;
 }
 
-html {
-  scroll-behavior: smooth;
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { scroll-behavior: smooth; }
+body { background: var(--bb-void); color: var(--bb-cream); font-family: 'DM Sans', system-ui, sans-serif; overflow-x: hidden; }
+
+::selection { background: rgba(196,168,120,0.25); color: var(--bb-cream); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(196,168,130,0.15); border-radius: 2px; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-body {
-  background-color: var(--bethel-black);
-  color: white;
-  font-family: var(--font-montserrat), sans-serif;
-}
+.animate-fade-up { animation: fadeUp 0.8s ease-out forwards; }
+.animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+.animate-breathe { animation: breathe 2.5s ease-in-out infinite; }
 
-/* Luxury scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
+.delay-100 { animation-delay: 0.1s; opacity: 0; animation-fill-mode: forwards; }
+.delay-200 { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; }
+.delay-300 { animation-delay: 0.3s; opacity: 0; animation-fill-mode: forwards; }
+.delay-400 { animation-delay: 0.4s; opacity: 0; animation-fill-mode: forwards; }
+.delay-500 { animation-delay: 0.5s; opacity: 0; animation-fill-mode: forwards; }
 
-::-webkit-scrollbar-track {
-  background: var(--bethel-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--bethel-cyan);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--bethel-coral);
-}
-
-/* Selection */
-::selection {
-  background-color: var(--bethel-cyan);
-  color: var(--bethel-black);
-}
-
-/* Gradient text utility */
-.gradient-text {
-  background: linear-gradient(135deg, var(--bethel-cyan) 0%, var(--bethel-coral) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Shimmer border */
-.shimmer-border {
-  position: relative;
-}
-
-.shimmer-border::before {
+/* Floating button pulse */
+.order-pulse::before {
   content: '';
   position: absolute;
-  inset: -2px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    var(--bethel-cyan),
-    transparent
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s ease-in-out infinite;
-  z-index: -1;
-  border-radius: inherit;
+  inset: -4px;
+  border-radius: 28px;
+  border: 2px solid var(--bb-sand);
+  animation: pulse-ring 2s ease-out infinite;
 }
 
-@keyframes shimmer {
-  0%, 100% { background-position: 200% 0; }
-  50% { background-position: -200% 0; }
+/* Glass panels */
+.glass-panel {
+  background: var(--bb-faint);
+  border: 1px solid var(--bb-line);
+  backdrop-filter: blur(12px);
 }
 
-/* Glass effect */
-.glass {
-  background: rgba(10, 10, 10, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 255, 255, 0.1);
+/* Grain overlay */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  pointer-events: none;
 }
 
-/* Button glow */
-.btn-glow {
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-  transition: all 0.3s ease;
+/* Menu item hover */
+.menu-item { transition: background 0.2s; }
+.menu-item:hover { background: var(--bb-faint); }
+
+/* Cart bar entrance */
+.cart-bar { animation: slide-up 0.3s ease-out; }
+
+/* Offline banner */
+.offline-bar {
+  background: linear-gradient(90deg, rgba(196,154,58,0.12), rgba(196,154,58,0.06));
+  border-bottom: 1px solid rgba(196,154,58,0.2);
 }
 
-.btn-glow:hover {
-  box-shadow: 0 0 40px rgba(0, 255, 255, 0.6);
-  transform: scale(1.02);
-}
+/* Scrollbar hide utility */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Form input styles */
-.input-bethel {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(0, 255, 255, 0.2);
-  color: white;
-  padding: 0.75rem 1rem;
-  transition: all 0.3s ease;
-}
-
-.input-bethel:focus {
-  outline: none;
-  border-color: var(--bethel-cyan);
-  box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-}
-
-.input-bethel::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-/* Card flip animation */
-.flip-card {
-  perspective: 1000px;
-}
-
-.flip-card-inner {
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
-}
-
-.flip-card.flipped .flip-card-inner {
-  transform: rotateY(180deg);
-}
-
-.flip-card-front,
-.flip-card-back {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.flip-card-back {
-  transform: rotateY(180deg);
-}
+/* Font family utilities */
+.font-serif { font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif; }
+.font-sans { font-family: 'DM Sans', system-ui, sans-serif; }

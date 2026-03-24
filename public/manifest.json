@@ -1,0 +1,16 @@
+{
+  "name": "Bethel Bellini Beach Club",
+  "short_name": "Bethel Bellini",
+  "description": "Pide desde tu paraíso — ISLA OS",
+  "start_url": "/order",
+  "display": "standalone",
+  "background_color": "#0A0907",
+  "theme_color": "#0A0907",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

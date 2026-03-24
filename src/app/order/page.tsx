@@ -634,234 +634,177 @@ function OrderContent() {
   }
 
   // ══════════════════════════════════════════════════════════════════
-  // STEP 3: ZONE SELECTION - Demo-Ready Section Picker
+  // STEP 3: ZONE SELECTION - Simple Version
   // ══════════════════════════════════════════════════════════════════
   if (step === "zone" && session) {
+    const selectZone = (zoneName: string) => {
+      setSession({ ...session, zone: zoneName });
+      setStep("menu");
+    };
+
     return (
       <div className="min-h-screen bg-[var(--bb-void)] flex flex-col">
         {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--bb-line)] flex items-center justify-between">
           <button
             onClick={() => setStep("balance")}
-            className="w-8 h-8 rounded-full glass-panel flex items-center justify-center text-[var(--bb-muted)] text-sm"
+            className="text-[var(--bb-muted)] text-sm"
           >
-            ←
+            ← Volver
           </button>
-          <div className="text-center">
-            <div className="text-[12px] font-serif text-[var(--bb-cream)] tracking-[2px]">
-              BETHEL BELLINI
-            </div>
-            <div className="text-[9px] font-sans text-[var(--bb-sand)] tracking-[1px]">
-              ISLA TIERRA BOMBA
-            </div>
+          <div className="text-[11px] font-serif text-[var(--bb-cream)] tracking-[1px]">
+            BETHEL BELLINI
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 rounded-full bg-[var(--bb-ok)] animate-pulse" />
-            <span className="text-[8px] font-sans font-bold text-[var(--bb-ok)]">
-              EN VIVO
-            </span>
+          <div className="text-[8px] font-sans font-bold px-2 py-0.5 rounded bg-[rgba(90,158,111,0.12)] text-[var(--bb-ok)]">
+            ISLA OS
           </div>
         </div>
 
-        <div className="flex-1 px-4 py-5 overflow-y-auto">
-          <div className="max-w-md mx-auto">
-            {/* Title Section */}
-            <div className="text-center mb-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--bb-sand)]" />
-                <span className="text-[9px] font-sans font-semibold text-[var(--bb-sand)] tracking-[1.5px]">
-                  PASO 2 DE 3
-                </span>
-              </div>
-              <h2 className="text-2xl font-serif font-light text-[var(--bb-cream)] mb-2">
+        <div className="flex-1 px-5 py-6">
+          <div className="max-w-sm mx-auto">
+            {/* Title */}
+            <div className="text-center mb-8">
+              <h2 className="text-xl font-serif font-light text-[var(--bb-cream)] mb-2">
                 ¿Dónde te encuentras?
               </h2>
-              <p className="text-[var(--bb-muted)] text-sm font-sans max-w-xs mx-auto">
-                Selecciona tu sección para recibir tu pedido directamente
+              <p className="text-[var(--bb-muted)] text-sm font-sans">
+                Selecciona tu zona para que tu pedido llegue directo a ti.
               </p>
             </div>
 
-            {/* Visual Map Header */}
-            <div className="glass-panel rounded-2xl p-4 mb-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[rgba(196,168,130,0.1)] flex items-center justify-center text-lg">
-                    📍
-                  </div>
-                  <div>
-                    <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                      Mapa del Club
-                    </div>
-                    <div className="text-[var(--bb-muted)] text-[10px] font-sans">
-                      Toca tu ubicación actual
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[var(--bb-sand)] text-xs font-sans font-semibold">
-                    {ZONES.length} zonas
-                  </div>
-                  <div className="text-[var(--bb-muted)] text-[10px] font-sans">
-                    disponibles
-                  </div>
-                </div>
-              </div>
-
-              {/* Mini visual map */}
-              <div
-                className="relative h-16 rounded-xl overflow-hidden"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(42,107,124,0.2) 0%, rgba(196,101,74,0.15) 50%, rgba(212,146,58,0.1) 100%)",
-                }}
+            {/* Zone list */}
+            <div className="space-y-3">
+              <button
+                onClick={() => selectZone("Camastros Playa")}
+                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
               >
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-[var(--bb-ocean)] opacity-60" />
-                    <div className="w-2 h-2 rounded-full bg-[var(--bb-coral)] opacity-60" />
-                    <div className="w-4 h-4 rounded-full bg-[var(--bb-sand)] opacity-40" />
-                    <div className="w-2 h-2 rounded-full bg-[var(--bb-palm)] opacity-60" />
-                    <div className="w-3 h-3 rounded-full bg-[var(--bb-sunset)] opacity-50" />
-                  </div>
-                </div>
-                <div className="absolute bottom-2 left-0 right-0 text-center">
-                  <span className="text-[8px] font-sans text-[var(--bb-cream)] opacity-50 tracking-[2px]">
-                    MAR CARIBE ↓
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Zone Cards Grid */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              {ZONES.map((z) => (
-                <button
-                  key={z.id}
-                  onClick={() => {
-                    setSession({ ...session, zone: z.name });
-                    setStep("menu");
-                  }}
-                  className="group relative rounded-2xl p-4 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: `linear-gradient(145deg, ${z.color}15 0%, ${z.color}08 100%)`,
-                    border: `1px solid ${z.color}30`,
-                  }}
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "rgba(196,101,74,0.15)" }}
                 >
-                  {/* Zone indicator */}
-                  <div
-                    className="w-10 h-10 rounded-xl mb-3 flex items-center justify-center"
-                    style={{
-                      background: `${z.color}20`,
-                      border: `1px solid ${z.color}40`,
-                    }}
-                  >
-                    <div
-                      className="w-3 h-3 rounded-full"
-                      style={{ background: z.color }}
-                    />
-                  </div>
-
-                  {/* Zone info */}
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold mb-0.5 leading-tight">
-                    {z.name}
-                  </div>
-                  <div
-                    className="text-[10px] font-sans font-medium mb-2"
-                    style={{ color: z.color }}
-                  >
-                    {z.sublabel}
-                  </div>
-
-                  {/* Capacity badge */}
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full glass-panel">
-                    <span className="text-[8px]">👥</span>
-                    <span className="text-[9px] font-sans text-[var(--bb-muted)]">
-                      {z.capacity}
-                    </span>
-                  </div>
-
-                  {/* Hover arrow */}
-                  <div
-                    className="absolute top-4 right-4 w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: `${z.color}30` }}
-                  >
-                    <span style={{ color: z.color }} className="text-xs">
-                      →
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            {/* Quick Selection for QR */}
-            <div className="glass-panel rounded-2xl p-4 mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[rgba(196,168,130,0.1)] flex items-center justify-center text-xl">
-                  📱
+                  🏖️
                 </div>
                 <div className="flex-1">
                   <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    ¿Tienes código QR?
+                    Camastros Playa
                   </div>
-                  <div className="text-[var(--bb-muted)] text-[11px] font-sans">
-                    Escanea el código de tu mesa o camastro
+                  <div className="text-[var(--bb-muted)] text-xs font-sans">
+                    Frente al mar
                   </div>
                 </div>
-                <button
-                  className="px-3 py-2 rounded-lg text-[10px] font-sans font-semibold text-[var(--bb-sand)]"
-                  style={{
-                    background: "rgba(196,168,130,0.1)",
-                    border: "1px solid rgba(196,168,130,0.2)",
-                  }}
+                <span className="text-[var(--bb-sand)]">→</span>
+              </button>
+
+              <button
+                onClick={() => selectZone("Piscina Infinity")}
+                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "rgba(42,107,124,0.15)" }}
                 >
-                  Escanear
-                </button>
-              </div>
+                  🏊
+                </div>
+                <div className="flex-1">
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                    Piscina Infinity
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-xs font-sans">
+                    Área de pool
+                  </div>
+                </div>
+                <span className="text-[var(--bb-sand)]">→</span>
+              </button>
+
+              <button
+                onClick={() => selectZone("Palapa VIP")}
+                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "rgba(212,146,58,0.15)" }}
+                >
+                  🛖
+                </div>
+                <div className="flex-1">
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                    Palapa VIP
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-xs font-sans">
+                    Zona privada
+                  </div>
+                </div>
+                <span className="text-[var(--bb-sand)]">→</span>
+              </button>
+
+              <button
+                onClick={() => selectZone("Bar del Mar")}
+                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "rgba(58,94,58,0.15)" }}
+                >
+                  🍹
+                </div>
+                <div className="flex-1">
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                    Bar del Mar
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-xs font-sans">
+                    Barra principal
+                  </div>
+                </div>
+                <span className="text-[var(--bb-sand)]">→</span>
+              </button>
+
+              <button
+                onClick={() => selectZone("Terraza Sunset")}
+                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "rgba(139,90,106,0.15)" }}
+                >
+                  🌅
+                </div>
+                <div className="flex-1">
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                    Terraza Sunset
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-xs font-sans">
+                    Vista panorámica
+                  </div>
+                </div>
+                <span className="text-[var(--bb-sand)]">→</span>
+              </button>
+
+              <button
+                onClick={() => selectZone("Restaurante")}
+                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
+              >
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                  style={{ background: "rgba(107,91,79,0.15)" }}
+                >
+                  🍽️
+                </div>
+                <div className="flex-1">
+                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                    Restaurante
+                  </div>
+                  <div className="text-[var(--bb-muted)] text-xs font-sans">
+                    Área gastronómica
+                  </div>
+                </div>
+                <span className="text-[var(--bb-sand)]">→</span>
+              </button>
             </div>
 
-            {/* Runner info */}
-            <div className="flex items-center justify-center gap-2 py-3">
-              <div className="flex -space-x-2">
-                <div className="w-6 h-6 rounded-full bg-[var(--bb-coral)] flex items-center justify-center text-[10px] text-white font-bold border-2 border-[var(--bb-void)]">
-                  M
-                </div>
-                <div className="w-6 h-6 rounded-full bg-[var(--bb-ocean)] flex items-center justify-center text-[10px] text-white font-bold border-2 border-[var(--bb-void)]">
-                  J
-                </div>
-                <div className="w-6 h-6 rounded-full bg-[var(--bb-palm)] flex items-center justify-center text-[10px] text-white font-bold border-2 border-[var(--bb-void)]">
-                  A
-                </div>
-              </div>
-              <p className="text-[var(--bb-muted)] text-[11px] font-sans">
-                <span className="text-[var(--bb-ok)]">3 runners</span> activos
-                para entrega inmediata
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Balance Footer */}
-        <div
-          className="px-4 py-3 border-t border-[var(--bb-line)]"
-          style={{ background: "var(--bb-earth)" }}
-        >
-          <div className="max-w-md mx-auto flex items-center justify-between">
-            <div>
-              <div className="text-[var(--bb-muted)] text-[9px] font-sans tracking-[1px]">
-                TU SALDO
-              </div>
-              <div className="text-[var(--bb-sand)] text-lg font-sans font-bold">
-                {fmt(session.balance)}
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="text-[8px] font-sans text-[var(--bb-muted)]">
-                Banda
-              </div>
-              <div className="px-2 py-1 rounded glass-panel text-[var(--bb-cream)] text-[10px] font-sans font-semibold">
-                {session.bandId}
-              </div>
-            </div>
+            {/* Help text */}
+            <p className="text-[var(--bb-muted)] text-[11px] font-sans text-center mt-6">
+              Nuestro runner llevará tu pedido directamente a tu ubicación.
+            </p>
           </div>
         </div>
       </div>

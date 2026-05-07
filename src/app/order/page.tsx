@@ -1,260 +1,86 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { useLanguage, LanguageToggle, catName } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
 
 /* ═══════════════════════════════════════════════════
-   ISLA OS — Complete Guest Ordering System
-   Production-ready flow with check-in, balance, ordering
+   ISLA OS — Complete Guest Ordering System (Bilingual)
    ═══════════════════════════════════════════════════ */
 
 const MENU: Record<
   string,
-  { name: string; price: number; desc?: string; pop?: boolean }[]
+  { name: string; price: number; desc?: string; descEn?: string; pop?: boolean }[]
 > = {
-  Cócteles: [
-    {
-      name: "Aperol Spritz",
-      price: 65000,
-      desc: "Aperol, prosecco, soda",
-      pop: true,
-    },
-    {
-      name: "Mojito",
-      price: 65000,
-      desc: "Ron, hierba buena, lima, azúcar de caña",
-    },
-    {
-      name: "Piña Colada",
-      price: 65000,
-      desc: "Ron de coco, piña fresca, crema de coco",
-    },
-    { name: "Paloma", price: 65000, desc: "Tequila, toronja, lima, sal" },
-    {
-      name: "Tequila Sunrise",
-      price: 65000,
-      desc: "Tequila, jugo de naranja, granadina",
-    },
-    { name: "Moscow Mule", price: 65000, desc: "Vodka, ginger beer, lima" },
-    { name: "Daiquiri", price: 65000, desc: "Ron, limón, azúcar" },
-    {
-      name: "Margarita Mezcal",
-      price: 65000,
-      desc: "Mezcal, limón, agave, sal",
-      pop: true,
-    },
+  Cocteles: [
+    { name: "Aperol Spritz", price: 65000, desc: "Aperol, prosecco, soda", descEn: "Aperol, prosecco, soda", pop: true },
+    { name: "Mojito", price: 65000, desc: "Ron, hierba buena, lima, azucar de cana", descEn: "Rum, mint, lime, cane sugar" },
+    { name: "Pina Colada", price: 65000, desc: "Ron de coco, pina fresca, crema de coco", descEn: "Coconut rum, fresh pineapple, coconut cream" },
+    { name: "Paloma", price: 65000, desc: "Tequila, toronja, lima, sal", descEn: "Tequila, grapefruit, lime, salt" },
+    { name: "Tequila Sunrise", price: 65000, desc: "Tequila, jugo de naranja, granadina", descEn: "Tequila, orange juice, grenadine" },
+    { name: "Moscow Mule", price: 65000, desc: "Vodka, ginger beer, lima", descEn: "Vodka, ginger beer, lime" },
+    { name: "Daiquiri", price: 65000, desc: "Ron, limon, azucar", descEn: "Rum, lime, sugar" },
+    { name: "Margarita Mezcal", price: 65000, desc: "Mezcal, limon, agave, sal", descEn: "Mezcal, lime, agave, salt", pop: true },
   ],
   Cervezas: [
-    {
-      name: "Aguila",
-      price: 15000,
-      desc: "Cerveza colombiana clásica",
-      pop: true,
-    },
-    { name: "Club Colombia Dorada", price: 18000, desc: "Premium lager" },
-    { name: "Corona Extra", price: 22000, desc: "Con limón" },
+    { name: "Aguila", price: 15000, desc: "Cerveza colombiana clasica", descEn: "Classic Colombian beer", pop: true },
+    { name: "Club Colombia Dorada", price: 18000, desc: "Premium lager", descEn: "Premium lager" },
+    { name: "Corona Extra", price: 22000, desc: "Con limon", descEn: "With lime" },
   ],
   Entradas: [
-    {
-      name: "Rollitos Crocantes",
-      price: 65000,
-      desc: "Rabo de toro, mayonesa de hongos, queso de cabra",
-      pop: true,
-    },
-    {
-      name: "Ceviche de Pescado Blanco",
-      price: 65000,
-      desc: "Leche de coco, pimientos ahumados, pan ciabatta",
-    },
-    {
-      name: "Tartar de Res",
-      price: 65000,
-      desc: "Aguacate, masa madre, aceite de trufa blanca",
-    },
-    {
-      name: "Tostada de Salmón",
-      price: 60000,
-      desc: "Salmón curado 48hrs, queso crema, eneldo",
-    },
-    {
-      name: "Taquitos de Camarón",
-      price: 60000,
-      desc: "Mantequilla de ajo, vino blanco, paprika",
-    },
-    {
-      name: "Tartar de Atún",
-      price: 65000,
-      desc: "Mango, aguacate, aceitunas kalamata",
-    },
-    {
-      name: "Pulpo Rostizado",
-      price: 65000,
-      desc: "Puré cremoso de yuca, chimichurri",
-      pop: true,
-    },
-    {
-      name: "Bruschetta Capresse",
-      price: 65000,
-      desc: "Pesto, tomates, bocconcini, aguacate",
-    },
+    { name: "Rollitos Crocantes", price: 65000, desc: "Rabo de toro, mayonesa de hongos, queso de cabra", descEn: "Oxtail, mushroom mayo, goat cheese", pop: true },
+    { name: "Ceviche de Pescado Blanco", price: 65000, desc: "Leche de coco, pimientos ahumados, pan ciabatta", descEn: "Coconut milk, smoked peppers, ciabatta" },
+    { name: "Tartar de Res", price: 65000, desc: "Aguacate, masa madre, aceite de trufa blanca", descEn: "Avocado, sourdough, white truffle oil" },
+    { name: "Tostada de Salmon", price: 60000, desc: "Salmon curado 48hrs, queso crema, eneldo", descEn: "48hr cured salmon, cream cheese, dill" },
+    { name: "Taquitos de Camaron", price: 60000, desc: "Mantequilla de ajo, vino blanco, paprika", descEn: "Garlic butter, white wine, paprika" },
+    { name: "Tartar de Atun", price: 65000, desc: "Mango, aguacate, aceitunas kalamata", descEn: "Mango, avocado, kalamata olives" },
+    { name: "Pulpo Rostizado", price: 65000, desc: "Pure cremoso de yuca, chimichurri", descEn: "Creamy yuca puree, chimichurri", pop: true },
+    { name: "Bruschetta Capresse", price: 65000, desc: "Pesto, tomates, bocconcini, aguacate", descEn: "Pesto, tomatoes, bocconcini, avocado" },
   ],
   Pasta: [
-    {
-      name: "Penne al Pesto",
-      price: 55000,
-      desc: "Albahaca, parmesano, nueces",
-    },
-    {
-      name: "Penne a la Carbonara",
-      price: 65000,
-      desc: "Yema de huevo, parmesano, panceta",
-      pop: true,
-    },
-    {
-      name: "Penne a la Marinera",
-      price: 65000,
-      desc: "Almejas, mejillones, calamar, camarón",
-    },
-    {
-      name: "Penne al Pistacho",
-      price: 65000,
-      desc: "Pistachos, parmesano, trufa blanca",
-    },
+    { name: "Penne al Pesto", price: 55000, desc: "Albahaca, parmesano, nueces", descEn: "Basil, parmesan, walnuts" },
+    { name: "Penne a la Carbonara", price: 65000, desc: "Yema de huevo, parmesano, panceta", descEn: "Egg yolk, parmesan, pancetta", pop: true },
+    { name: "Penne a la Marinera", price: 65000, desc: "Almejas, mejillones, calamar, camaron", descEn: "Clams, mussels, squid, shrimp" },
+    { name: "Penne al Pistacho", price: 65000, desc: "Pistachos, parmesano, trufa blanca", descEn: "Pistachios, parmesan, white truffle" },
   ],
   "Del Mar": [
-    {
-      name: "Arroz Meloso de Mariscos",
-      price: 80000,
-      desc: "Mariscos al ajillo, arroz cremoso",
-      pop: true,
-    },
-    {
-      name: "Risotto Negro",
-      price: 135000,
-      desc: "Tinta de calamar, langostinos, paprika",
-    },
-    {
-      name: "Fish & Chips",
-      price: 70000,
-      desc: "Pescado rebozado, papa artesanal, tártara",
-    },
-    {
-      name: "Mejillones Provenzal",
-      price: 70000,
-      desc: "Mantequilla de ajo, vino blanco",
-    },
-    {
-      name: "Fettuccini Marinera",
-      price: 65000,
-      desc: "Mariscos, caldo de pescado, peperoncino",
-    },
+    { name: "Arroz Meloso de Mariscos", price: 80000, desc: "Mariscos al ajillo, arroz cremoso", descEn: "Garlic seafood, creamy rice", pop: true },
+    { name: "Risotto Negro", price: 135000, desc: "Tinta de calamar, langostinos, paprika", descEn: "Squid ink, langoustines, paprika" },
+    { name: "Fish & Chips", price: 70000, desc: "Pescado rebozado, papa artesanal, tartara", descEn: "Battered fish, artisanal chips, tartar" },
+    { name: "Mejillones Provenzal", price: 70000, desc: "Mantequilla de ajo, vino blanco", descEn: "Garlic butter, white wine" },
+    { name: "Fettuccini Marinera", price: 65000, desc: "Mariscos, caldo de pescado, peperoncino", descEn: "Seafood, fish broth, peperoncino" },
   ],
   "Cortes Angus": [
-    {
-      name: "Picaña 350g",
-      price: 195000,
-      desc: "Grasa dorada crujiente, asado lento",
-    },
-    {
-      name: "Entraña 350g",
-      price: 235000,
-      desc: "Fino y jugoso, sal marina, mantequilla de hierbas",
-    },
-    {
-      name: "New York 300g",
-      price: 235000,
-      desc: "Sellado al carbón, jugoso, ahumado",
-    },
-    {
-      name: "Rib Eye 350g",
-      price: 285000,
-      desc: "Marmoleado, sellado a fuego alto",
-      pop: true,
-    },
-    {
-      name: "Cowboy 1 kg",
-      price: 650000,
-      desc: "Black Angus premium, para compartir",
-    },
+    { name: "Picana 350g", price: 195000, desc: "Grasa dorada crujiente, asado lento", descEn: "Golden crispy fat, slow-roasted" },
+    { name: "Entrana 350g", price: 235000, desc: "Fino y jugoso, sal marina, mantequilla de hierbas", descEn: "Fine and juicy, sea salt, herb butter" },
+    { name: "New York 300g", price: 235000, desc: "Sellado al carbon, jugoso, ahumado", descEn: "Charcoal-seared, juicy, smoky" },
+    { name: "Rib Eye 350g", price: 285000, desc: "Marmoleado, sellado a fuego alto", descEn: "Marbled, high-heat seared", pop: true },
+    { name: "Cowboy 1 kg", price: 650000, desc: "Black Angus premium, para compartir", descEn: "Premium Black Angus, for sharing" },
   ],
   Champagne: [
     { name: "Chandon Brut", price: 230000 },
-    { name: "Moët Impérial", price: 900000 },
+    { name: "Moet Imperial", price: 900000 },
     { name: "Veuve Clicquot", price: 1100000 },
-    { name: "Dom Pérignon", price: 3000000 },
+    { name: "Dom Perignon", price: 3000000 },
   ],
   "Tragos Premium": [
     { name: "Ojo de Tigre", price: 60000 },
     { name: "SKY Vodka", price: 60000 },
-    { name: "Patrón Silver", price: 65000 },
+    { name: "Patron Silver", price: 65000 },
     { name: "Montelobos", price: 70000 },
-    { name: "Patrón Reposado", price: 70000 },
+    { name: "Patron Reposado", price: 70000 },
     { name: "Grey Goose", price: 85000, pop: true },
     { name: "Don Julio 70", price: 90000, pop: true },
-    { name: "Patrón Cristalino", price: 90000 },
+    { name: "Patron Cristalino", price: 90000 },
   ],
   "Sin Alcohol": [
-    { name: "Agua de Coco", price: 12000, desc: "Coco fresco de la isla" },
-    { name: "Jugo Natural", price: 15000, desc: "Maracuyá, mango, o lulo" },
-    {
-      name: "Limonada de Coco",
-      price: 18000,
-      desc: "Limón, coco, hierba buena",
-    },
+    { name: "Agua de Coco", price: 12000, desc: "Coco fresco de la isla", descEn: "Fresh island coconut" },
+    { name: "Jugo Natural", price: 15000, desc: "Maracuya, mango, o lulo", descEn: "Passion fruit, mango, or lulo" },
+    { name: "Limonada de Coco", price: 18000, desc: "Limon, coco, hierba buena", descEn: "Lime, coconut, mint" },
   ],
 };
-
-const ZONES = [
-  {
-    id: "camastros-playa",
-    name: "Camastros Playa",
-    sublabel: "Frente al Mar",
-    color: "#C4654A",
-    capacity: "1-4 personas",
-    features: ["Vista directa al océano", "Servicio prioritario"],
-  },
-  {
-    id: "piscina-infinity",
-    name: "Piscina Infinity",
-    sublabel: "Área de Pool",
-    color: "#2A6B7C",
-    capacity: "1-6 personas",
-    features: ["Borde infinito", "Ambiente relajado"],
-  },
-  {
-    id: "palapa-vip",
-    name: "Palapa VIP",
-    sublabel: "Zona Privada",
-    color: "#D4923A",
-    capacity: "6-12 personas",
-    features: ["Servicio dedicado", "Mesa privada"],
-  },
-  {
-    id: "bar-principal",
-    name: "Bar del Mar",
-    sublabel: "Barra Central",
-    color: "#3A5E3A",
-    capacity: "1-4 personas",
-    features: ["Cócteles artesanales", "Ambiente social"],
-  },
-  {
-    id: "terraza-sunset",
-    name: "Terraza Sunset",
-    sublabel: "Vista Panorámica",
-    color: "#8B5A6A",
-    capacity: "2-8 personas",
-    features: ["Mejor atardecer", "Mesas elevadas"],
-  },
-  {
-    id: "restaurante",
-    name: "Restaurante",
-    sublabel: "Área Gastronómica",
-    color: "#6B5B4F",
-    capacity: "2-10 personas",
-    features: ["Menú completo", "Clima controlado"],
-  },
-];
 
 const CATS = Object.keys(MENU);
 const fmt = (n: number) => `$ ${n.toLocaleString("es-CO")}`;
@@ -266,7 +92,24 @@ type GuestSession = {
   balance: number;
   bandId: string;
   zone: string | null;
+  sessionId: string;
+  guestId: string;
 };
+type OrderResult = {
+  orderId: string;
+  orderNumber: string;
+  status: string;
+};
+
+// Zone data with bilingual labels
+const ZONE_DATA = [
+  { id: "camastros-playa", es: "Camastros Playa", en: "Beach Loungers", subEs: "Frente al mar", subEn: "Oceanfront", emoji: "\uD83C\uDFD6\uFE0F", bg: "rgba(196,101,74,0.15)" },
+  { id: "piscina-infinity", es: "Piscina Infinity", en: "Infinity Pool", subEs: "Area de pool", subEn: "Pool area", emoji: "\uD83C\uDFCA", bg: "rgba(42,107,124,0.15)" },
+  { id: "palapa-vip", es: "Palapa VIP", en: "VIP Palapa", subEs: "Zona privada", subEn: "Private zone", emoji: "\uD83D\uDED6", bg: "rgba(212,146,58,0.15)" },
+  { id: "bar-principal", es: "Bar del Mar", en: "Sea Bar", subEs: "Barra principal", subEn: "Main bar", emoji: "\uD83C\uDF79", bg: "rgba(58,94,58,0.15)" },
+  { id: "terraza-sunset", es: "Terraza Sunset", en: "Sunset Terrace", subEs: "Vista panoramica", subEn: "Panoramic view", emoji: "\uD83C\uDF05", bg: "rgba(139,90,106,0.15)" },
+  { id: "restaurante", es: "Restaurante", en: "Restaurant", subEs: "Area gastronomica", subEn: "Dining area", emoji: "\uD83C\uDF7D\uFE0F", bg: "rgba(107,91,79,0.15)" },
+];
 
 // ══════════════════════════════════════════════════════════════════
 // MAIN ORDER COMPONENT
@@ -275,32 +118,44 @@ type GuestSession = {
 function OrderContent() {
   const params = useSearchParams();
   const initialZone = params.get("zone");
+  const { lang, t } = useLanguage();
 
-  // Flow states: welcome → balance → zone → menu → cart → pay → done
   const [step, setStep] = useState<
     "welcome" | "balance" | "zone" | "menu" | "cart" | "pay" | "done"
   >("welcome");
 
-  // Guest session
   const [session, setSession] = useState<GuestSession | null>(null);
   const [phone, setPhone] = useState("");
   const [phoneError, setPhoneError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Menu state
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cat, setCat] = useState(CATS[0]);
   const [payMethod, setPayMethod] = useState<string | null>(null);
   const [online, setOnline] = useState(true);
 
-  // Top-up state
   const [topUpAmount, setTopUpAmount] = useState<number | null>(null);
   const [showTopUp, setShowTopUp] = useState(false);
+  const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
 
   const catRef = useRef<HTMLDivElement>(null);
 
+  // Register service worker
   useEffect(() => {
-    const on = () => setOnline(true);
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
+  // Online/offline detection + sync
+  useEffect(() => {
+    const on = () => {
+      setOnline(true);
+      // Sync offline orders
+      if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: "SYNC_ORDERS" });
+      }
+    };
     const off = () => setOnline(false);
     window.addEventListener("online", on);
     window.addEventListener("offline", off);
@@ -311,7 +166,25 @@ function OrderContent() {
     };
   }, []);
 
-  // Auto-set zone if coming from QR with zone param (after check-in)
+  // Cart persistence in localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("bb-cart");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as CartItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) setCart(parsed);
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cart.length > 0) {
+      localStorage.setItem("bb-cart", JSON.stringify(cart));
+    } else {
+      localStorage.removeItem("bb-cart");
+    }
+  }, [cart]);
+
   const hasSetZoneRef = useRef(false);
   useEffect(() => {
     if (initialZone && session && !session.zone && !hasSetZoneRef.current) {
@@ -341,61 +214,193 @@ function OrderContent() {
   const total = cart.reduce((s, c) => s + c.price * c.qty, 0);
   const count = cart.reduce((s, c) => s + c.qty, 0);
 
-  // Phone validation
   const validatePhone = (p: string) => {
     const cleaned = p.replace(/\D/g, "");
-    if (cleaned.length < 10) return "Ingresa un número válido";
+    if (cleaned.length < 10) return t("o.phone_error");
     return "";
   };
 
-  // Check-in handler (simulates API call)
-  const handleCheckIn = () => {
+  const demoFallback = (cleanPhone: string) => {
+    const bandId = `BB-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+    setSession({
+      phone: cleanPhone,
+      name: lang === "en" ? "Guest" : "Invitado",
+      balance: 500000,
+      bandId,
+      zone: initialZone || "Bar del Mar",
+      sessionId: `demo-${Date.now()}`,
+      guestId: `demo-guest-${Date.now()}`,
+    });
+    setStep("balance");
+  };
+
+  const handleCheckIn = async () => {
     const error = validatePhone(phone);
     if (error) {
       setPhoneError(error);
       return;
     }
     setLoading(true);
-    // Simulate API lookup
-    setTimeout(() => {
+    try {
       const cleanPhone = phone.replace(/\D/g, "");
-      // Simulate finding or creating guest
-      const mockSession: GuestSession = {
-        phone: cleanPhone,
-        name: "Invitado",
-        balance: Math.floor(Math.random() * 300000) + 100000, // Random balance 100k-400k
-        bandId: `BB-${Math.floor(Math.random() * 9000 + 1000)}`,
-        zone: initialZone,
-      };
-      setSession(mockSession);
+
+      // Look up existing guest
+      const lookupRes = await fetch(`/api/guests/checkin?phone=${cleanPhone}`);
+      const lookupData = await lookupRes.json();
+
+      if (lookupData.session) {
+        // Existing active session
+        const s = lookupData.session;
+        const g = lookupData.guest || s.guests;
+        setSession({
+          phone: cleanPhone,
+          name: g?.name || (lang === "en" ? "Guest" : "Invitado"),
+          balance: s.balance,
+          bandId: s.band_id,
+          zone: s.zone || initialZone,
+          sessionId: s.id,
+          guestId: s.guest_id || g?.id,
+        });
+        setStep("balance");
+      } else {
+        // New guest — create with auto band
+        const bandId = `BB-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+        const checkinRes = await fetch("/api/guests/checkin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: cleanPhone,
+            country_code: "+57",
+            name: lang === "en" ? "Guest" : "Invitado",
+            band_id: bandId,
+            initial_balance: 0,
+            zone: initialZone || undefined,
+          }),
+        });
+        const checkinData = await checkinRes.json();
+
+        if (!checkinRes.ok) {
+          // Demo fallback — API not configured yet
+          demoFallback(cleanPhone);
+          return;
+        }
+
+        setSession({
+          phone: cleanPhone,
+          name: lang === "en" ? "Guest" : "Invitado",
+          balance: 0,
+          bandId: bandId,
+          zone: initialZone,
+          sessionId: checkinData.session?.id || "",
+          guestId: checkinData.guest_id || "",
+        });
+        setStep("balance");
+      }
+    } catch {
+      // Demo fallback — API unavailable
+      const cleanPhone = phone.replace(/\D/g, "");
+      demoFallback(cleanPhone);
+    } finally {
       setLoading(false);
-      setStep("balance");
-    }, 1500);
+    }
   };
 
-  // Top-up handler
-  const handleTopUp = (amount: number) => {
+  const handleTopUp = async (amount: number) => {
     if (!session) return;
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/guests/topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.sessionId,
+          amount,
+          method: "cash",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSession({ ...session, balance: data.new_balance });
+      } else {
+        // Demo fallback
+        setSession({ ...session, balance: session.balance + amount });
+      }
+      setShowTopUp(false);
+      setTopUpAmount(null);
+    } catch {
+      // Demo fallback
       setSession({ ...session, balance: session.balance + amount });
       setShowTopUp(false);
       setTopUpAmount(null);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
-  // Submit order
-  const submitOrder = () => {
+  const submitOrderDemo = () => {
+    if (!session) return;
+    const h = String(new Date().getHours()).padStart(2, "0");
+    const m = String(new Date().getMinutes()).padStart(2, "0");
+    const rand = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+    const orderNum = `BB-${h}${m}-${rand}`;
+    setSession({ ...session, balance: Math.max(0, session.balance - total) });
+    setOrderResult({
+      orderId: `demo-${Date.now()}`,
+      orderNumber: orderNum,
+      status: "pending",
+    });
+    setCart([]);
+    localStorage.removeItem("bb-cart");
+    setStep("done");
+  };
+
+  const submitOrder = async () => {
     if (!session) return;
     setLoading(true);
-    setTimeout(() => {
-      // Deduct from balance
-      setSession({ ...session, balance: session.balance - total });
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.sessionId,
+          zone: session.zone || "Bar del Mar",
+          items: cart.map((c) => ({
+            item_name: c.name,
+            item_price: c.price,
+            quantity: c.qty,
+          })),
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setSession({ ...session, balance: data.new_balance });
+        setOrderResult({
+          orderId: data.order?.id || "",
+          orderNumber: data.order?.order_number || "BB-0000",
+          status: "pending",
+        });
+        setCart([]);
+        localStorage.removeItem("bb-cart");
+        setStep("done");
+      } else if (res.status === 402) {
+        // Insufficient balance — show top-up prompt
+        setShowTopUp(true);
+      } else {
+        // Demo fallback
+        submitOrderDemo();
+      }
+    } catch {
+      // Demo fallback (also handles offline)
+      submitOrderDemo();
+    } finally {
       setLoading(false);
-      setStep("done");
-    }, 2200);
+    }
   };
+
+  // Helper to get description in correct language
+  const desc = (item: { desc?: string; descEn?: string }) =>
+    lang === "en" && item.descEn ? item.descEn : item.desc;
 
   // ══════════════════════════════════════════════════════════════════
   // STEP 1: WELCOME / CHECK-IN
@@ -403,11 +408,11 @@ function OrderContent() {
   if (step === "welcome") {
     return (
       <div className="min-h-screen bg-[var(--bb-void)] flex flex-col">
-        {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--bb-line)] flex items-center justify-between">
           <Link href="/" className="text-[var(--bb-muted)] text-sm">
-            ← Volver
+            &larr; {t("o.back")}
           </Link>
+          <LanguageToggle />
           <div className="text-[8px] font-sans font-bold px-2 py-0.5 rounded bg-[rgba(90,158,111,0.12)] text-[var(--bb-ok)]">
             ISLA OS
           </div>
@@ -415,7 +420,6 @@ function OrderContent() {
 
         <div className="flex-1 flex items-center justify-center px-5">
           <div className="max-w-sm w-full text-center">
-            {/* Logo */}
             <div className="mb-8">
               <div className="text-3xl font-serif font-light text-[var(--bb-cream)] tracking-[3px] mb-2">
                 BETHEL BELLINI
@@ -425,21 +429,18 @@ function OrderContent() {
               </div>
             </div>
 
-            {/* Welcome message */}
             <div className="mb-8">
               <h1 className="text-xl font-serif font-light text-[var(--bb-cream)] mb-2">
-                Bienvenido al Paraíso
+                {t("o.welcome")}
               </h1>
               <p className="text-[var(--bb-muted)] text-sm font-sans">
-                Ingresa tu número para acceder a tu cuenta y pedir desde tu
-                zona.
+                {t("o.welcome_sub")}
               </p>
             </div>
 
-            {/* Phone input */}
             <div className="mb-6">
               <label className="text-[var(--bb-sand)] text-[9px] tracking-[2px] font-sans font-semibold mb-2 block text-left">
-                NÚMERO DE CELULAR
+                {t("o.phone_label")}
               </label>
               <input
                 type="tel"
@@ -458,7 +459,6 @@ function OrderContent() {
               )}
             </div>
 
-            {/* Check-in button */}
             <button
               onClick={handleCheckIn}
               disabled={loading || phone.length < 10}
@@ -467,28 +467,26 @@ function OrderContent() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-[var(--bb-void)] border-t-transparent rounded-full animate-spin" />
-                  Verificando...
+                  {t("o.verifying")}
                 </span>
               ) : (
-                "Continuar"
+                t("o.continue")
               )}
             </button>
 
-            {/* Alternative: Wristband */}
             <div className="mt-6 pt-6 border-t border-[var(--bb-line)]">
               <p className="text-[var(--bb-muted)] text-xs font-sans mb-3">
-                ¿Ya tienes tu banda?
+                {t("o.have_band")}
               </p>
               <button className="glass-panel px-5 py-3 rounded-lg text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                Escanear Banda
+                {t("o.scan_band")}
               </button>
             </div>
 
-            {/* First time? */}
             <p className="text-[var(--bb-muted)] text-[11px] font-sans mt-8">
-              ¿Primera vez? Tu cuenta se crea automáticamente.
+              {t("o.first_time")}
               <br />
-              Carga tu saldo en el muelle al llegar.
+              {t("o.first_time2")}
             </p>
           </div>
         </div>
@@ -502,20 +500,19 @@ function OrderContent() {
   if (step === "balance" && session) {
     return (
       <div className="min-h-screen bg-[var(--bb-void)] flex flex-col">
-        {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--bb-line)] flex items-center justify-between">
           <button
             onClick={() => setStep("welcome")}
             className="text-[var(--bb-muted)] text-sm"
           >
-            ← Cambiar
+            &larr; {t("o.change")}
           </button>
           <div className="text-center">
             <div className="text-[11px] font-serif text-[var(--bb-cream)] tracking-[1px]">
               BETHEL BELLINI
             </div>
             <div className="text-[8px] font-sans text-[var(--bb-muted)]">
-              Banda: {session.bandId}
+              {t("o.band")}: {session.bandId}
             </div>
           </div>
           <div className="text-[8px] font-sans font-bold px-2 py-0.5 rounded bg-[rgba(90,158,111,0.12)] text-[var(--bb-ok)]">
@@ -525,31 +522,29 @@ function OrderContent() {
 
         <div className="flex-1 px-5 py-6">
           <div className="max-w-sm mx-auto">
-            {/* Balance Card */}
             <div className="glass-panel rounded-2xl p-6 mb-6">
               <p className="text-[var(--bb-muted)] text-xs font-sans mb-1">
-                Tu Balance
+                {t("o.your_balance")}
               </p>
               <div className="text-4xl font-serif font-light text-[var(--bb-sand)] mb-1">
                 {fmt(session.balance)}
               </div>
               <p className="text-[var(--bb-muted)] text-[11px] font-sans">
-                Disponible para consumo
+                {t("o.available")}
               </p>
             </div>
 
-            {/* Quick top-up */}
             {!showTopUp ? (
               <button
                 onClick={() => setShowTopUp(true)}
                 className="w-full glass-panel py-3 rounded-xl text-[var(--bb-sand)] text-sm font-sans font-semibold mb-6"
               >
-                + Recargar Saldo
+                {t("o.topup")}
               </button>
             ) : (
               <div className="glass-panel rounded-2xl p-5 mb-6">
                 <p className="text-[var(--bb-sand)] text-[9px] tracking-[2px] font-sans font-semibold mb-3">
-                  RECARGAR
+                  {t("o.topup_label")}
                 </p>
                 <div className="grid grid-cols-3 gap-2 mb-4">
                   {[100000, 200000, 500000].map((amt) => (
@@ -574,23 +569,22 @@ function OrderContent() {
                     }}
                     className="flex-1 glass-panel py-3 rounded-lg text-[var(--bb-muted)] text-sm font-sans"
                   >
-                    Cancelar
+                    {t("o.cancel")}
                   </button>
                   <button
                     onClick={() => topUpAmount && handleTopUp(topUpAmount)}
                     disabled={!topUpAmount || loading}
                     className="flex-1 bg-[var(--bb-sand)] text-[var(--bb-void)] py-3 rounded-lg text-sm font-sans font-bold disabled:opacity-40"
                   >
-                    {loading ? "..." : "Recargar"}
+                    {loading ? "..." : t("o.topup_btn")}
                   </button>
                 </div>
                 <p className="text-[var(--bb-muted)] text-[10px] font-sans text-center mt-3">
-                  Pago con Nequi, Daviplata o Tarjeta
+                  {t("o.pay_methods")}
                 </p>
               </div>
             )}
 
-            {/* Info cards */}
             <div className="space-y-3 mb-8">
               <div className="glass-panel rounded-xl p-4 flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-[rgba(196,168,130,0.1)] flex items-center justify-center text-lg">
@@ -601,7 +595,7 @@ function OrderContent() {
                     {session.phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3")}
                   </div>
                   <div className="text-[var(--bb-muted)] text-[11px] font-sans">
-                    Cuenta vinculada
+                    {t("o.linked")}
                   </div>
                 </div>
               </div>
@@ -611,21 +605,20 @@ function OrderContent() {
                 </div>
                 <div>
                   <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Listo para pedir
+                    {t("o.ready")}
                   </div>
                   <div className="text-[var(--bb-muted)] text-[11px] font-sans">
-                    Tu pedido se descuenta de tu saldo
+                    {t("o.balance_deduct")}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Continue button */}
             <button
               onClick={() => setStep(session.zone ? "menu" : "zone")}
               className="w-full bg-[var(--bb-sand)] text-[var(--bb-void)] py-4 rounded-xl text-sm font-sans font-bold"
             >
-              {session.zone ? "Ver Menú" : "Elegir mi Zona"}
+              {session.zone ? t("o.see_menu") : t("o.choose_zone")}
             </button>
           </div>
         </div>
@@ -634,7 +627,7 @@ function OrderContent() {
   }
 
   // ══════════════════════════════════════════════════════════════════
-  // STEP 3: ZONE SELECTION - Simple Version
+  // STEP 3: ZONE SELECTION
   // ══════════════════════════════════════════════════════════════════
   if (step === "zone" && session) {
     const selectZone = (zoneName: string) => {
@@ -644,13 +637,12 @@ function OrderContent() {
 
     return (
       <div className="min-h-screen bg-[var(--bb-void)] flex flex-col">
-        {/* Header */}
         <div className="px-5 py-4 border-b border-[var(--bb-line)] flex items-center justify-between">
           <button
             onClick={() => setStep("balance")}
             className="text-[var(--bb-muted)] text-sm"
           >
-            ← Volver
+            &larr; {t("o.back")}
           </button>
           <div className="text-[11px] font-serif text-[var(--bb-cream)] tracking-[1px]">
             BETHEL BELLINI
@@ -662,148 +654,43 @@ function OrderContent() {
 
         <div className="flex-1 px-5 py-6">
           <div className="max-w-sm mx-auto">
-            {/* Title */}
             <div className="text-center mb-8">
               <h2 className="text-xl font-serif font-light text-[var(--bb-cream)] mb-2">
-                ¿Dónde te encuentras?
+                {t("o.where")}
               </h2>
               <p className="text-[var(--bb-muted)] text-sm font-sans">
-                Selecciona tu zona para que tu pedido llegue directo a ti.
+                {t("o.zone_sub")}
               </p>
             </div>
 
-            {/* Zone list */}
             <div className="space-y-3">
-              <button
-                onClick={() => selectZone("Camastros Playa")}
-                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "rgba(196,101,74,0.15)" }}
+              {ZONE_DATA.map((z) => (
+                <button
+                  key={z.id}
+                  onClick={() => selectZone(lang === "en" ? z.en : z.es)}
+                  className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
                 >
-                  🏖️
-                </div>
-                <div className="flex-1">
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Camastros Playa
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                    style={{ background: z.bg }}
+                  >
+                    {z.emoji}
                   </div>
-                  <div className="text-[var(--bb-muted)] text-xs font-sans">
-                    Frente al mar
+                  <div className="flex-1">
+                    <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
+                      {lang === "en" ? z.en : z.es}
+                    </div>
+                    <div className="text-[var(--bb-muted)] text-xs font-sans">
+                      {lang === "en" ? z.subEn : z.subEs}
+                    </div>
                   </div>
-                </div>
-                <span className="text-[var(--bb-sand)]">→</span>
-              </button>
-
-              <button
-                onClick={() => selectZone("Piscina Infinity")}
-                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "rgba(42,107,124,0.15)" }}
-                >
-                  🏊
-                </div>
-                <div className="flex-1">
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Piscina Infinity
-                  </div>
-                  <div className="text-[var(--bb-muted)] text-xs font-sans">
-                    Área de pool
-                  </div>
-                </div>
-                <span className="text-[var(--bb-sand)]">→</span>
-              </button>
-
-              <button
-                onClick={() => selectZone("Palapa VIP")}
-                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "rgba(212,146,58,0.15)" }}
-                >
-                  🛖
-                </div>
-                <div className="flex-1">
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Palapa VIP
-                  </div>
-                  <div className="text-[var(--bb-muted)] text-xs font-sans">
-                    Zona privada
-                  </div>
-                </div>
-                <span className="text-[var(--bb-sand)]">→</span>
-              </button>
-
-              <button
-                onClick={() => selectZone("Bar del Mar")}
-                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "rgba(58,94,58,0.15)" }}
-                >
-                  🍹
-                </div>
-                <div className="flex-1">
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Bar del Mar
-                  </div>
-                  <div className="text-[var(--bb-muted)] text-xs font-sans">
-                    Barra principal
-                  </div>
-                </div>
-                <span className="text-[var(--bb-sand)]">→</span>
-              </button>
-
-              <button
-                onClick={() => selectZone("Terraza Sunset")}
-                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "rgba(139,90,106,0.15)" }}
-                >
-                  🌅
-                </div>
-                <div className="flex-1">
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Terraza Sunset
-                  </div>
-                  <div className="text-[var(--bb-muted)] text-xs font-sans">
-                    Vista panorámica
-                  </div>
-                </div>
-                <span className="text-[var(--bb-sand)]">→</span>
-              </button>
-
-              <button
-                onClick={() => selectZone("Restaurante")}
-                className="w-full glass-panel rounded-xl p-4 flex items-center gap-4 text-left"
-              >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: "rgba(107,91,79,0.15)" }}
-                >
-                  🍽️
-                </div>
-                <div className="flex-1">
-                  <div className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-                    Restaurante
-                  </div>
-                  <div className="text-[var(--bb-muted)] text-xs font-sans">
-                    Área gastronómica
-                  </div>
-                </div>
-                <span className="text-[var(--bb-sand)]">→</span>
-              </button>
+                  <span className="text-[var(--bb-sand)]">&rarr;</span>
+                </button>
+              ))}
             </div>
 
-            {/* Help text */}
             <p className="text-[var(--bb-muted)] text-[11px] font-sans text-center mt-6">
-              Nuestro runner llevará tu pedido directamente a tu ubicación.
+              {t("o.zone_help")}
             </p>
           </div>
         </div>
@@ -815,33 +702,43 @@ function OrderContent() {
   // STEP 6: ORDER DONE
   // ══════════════════════════════════════════════════════════════════
   if (step === "done" && session) {
-    const orderId = `BB-${Math.floor(Math.random() * 9000 + 1000)}`;
+    const displayOrderNumber = orderResult?.orderNumber || "BB-0000";
+    const isOffline = orderResult?.orderId === "offline";
+
     return (
       <div className="min-h-screen bg-[var(--bb-void)] flex items-center justify-center px-5">
         <div className="max-w-sm w-full text-center">
           <div
             className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
             style={{
-              background: "rgba(90,158,111,0.12)",
-              border: "1px solid rgba(90,158,111,0.3)",
+              background: isOffline ? "rgba(196,154,58,0.12)" : "rgba(90,158,111,0.12)",
+              border: isOffline ? "1px solid rgba(196,154,58,0.3)" : "1px solid rgba(90,158,111,0.3)",
             }}
           >
-            <span className="text-[var(--bb-ok)] text-3xl">✓</span>
+            <span className={isOffline ? "text-[var(--bb-warn)] text-3xl" : "text-[var(--bb-ok)] text-3xl"}>
+              {isOffline ? "◎" : "✓"}
+            </span>
           </div>
           <h2 className="text-[var(--bb-cream)] text-2xl font-serif font-light mb-1">
-            Pedido Confirmado
+            {isOffline ? (lang === "en" ? "Order Queued" : "Pedido en Cola") : t("o.confirmed")}
           </h2>
           <p className="text-[var(--bb-muted)] text-sm font-sans mb-6">
-            Tu orden está en preparación
+            {isOffline
+              ? (lang === "en" ? "Will be sent when you reconnect" : "Se enviara al reconectar")
+              : t("o.preparing")}
           </p>
+
+          {/* Real-time status tracker */}
+          {!isOffline && (
+            <OrderStatusTracker orderId={orderResult?.orderId || ""} />
+          )}
 
           <div className="glass-panel rounded-2xl p-5 text-left mb-6 space-y-3">
             {[
-              ["Orden", orderId, "var(--bb-sand)"],
-              ["Zona", session.zone || "N/A", "var(--bb-coral)"],
-              ["Total", fmt(total), "var(--bb-cream)"],
-              ["Nuevo saldo", fmt(session.balance), "var(--bb-ok)"],
-              ["Tiempo est.", "~8 minutos", "var(--bb-cream)"],
+              [t("o.order_id"), displayOrderNumber, "var(--bb-sand)"],
+              [t("o.zone"), session.zone || "N/A", "var(--bb-coral)"],
+              [t("o.new_bal"), fmt(session.balance), "var(--bb-ok)"],
+              [t("o.est_time"), t("o.est_min"), "var(--bb-cream)"],
             ].map(([l, v, c]) => (
               <div
                 key={l as string}
@@ -860,48 +757,27 @@ function OrderContent() {
             ))}
           </div>
 
-          {/* Order items */}
-          <div className="glass-panel rounded-xl p-4 mb-6 text-left">
-            <p className="text-[var(--bb-sand)] text-[9px] tracking-[1px] font-sans font-semibold mb-2">
-              TU PEDIDO
-            </p>
-            {cart.map((c) => (
-              <div
-                key={c.name}
-                className="flex justify-between py-1 text-xs font-sans"
-              >
-                <span className="text-[var(--bb-cream)]">
-                  {c.qty}× {c.name}
-                </span>
-                <span className="text-[var(--bb-muted)]">
-                  {fmt(c.price * c.qty)}
-                </span>
-              </div>
-            ))}
-          </div>
-
           <div className="glass-panel rounded-xl p-4 mb-6 text-left">
             <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed">
-              🏃 Nuestro runner de zona te llevará tu pedido directamente.
-              Relájate y disfruta del paraíso.
+              {t("o.runner")}
             </p>
           </div>
 
           <div className="flex gap-2">
             <button
               onClick={() => {
-                setCart([]);
+                setOrderResult(null);
                 setStep("menu");
               }}
               className="flex-1 glass-panel py-3 rounded-lg text-[var(--bb-cream)] text-sm font-sans font-semibold"
             >
-              Nuevo Pedido
+              {t("o.new_order")}
             </button>
             <Link
               href="/"
               className="flex-1 bg-[var(--bb-sand)] text-[var(--bb-void)] py-3 rounded-lg text-sm font-sans font-bold text-center"
             >
-              Volver
+              {t("o.go_back")}
             </Link>
           </div>
         </div>
@@ -922,14 +798,13 @@ function OrderContent() {
             onClick={() => setStep("cart")}
             className="text-[var(--bb-muted)] font-sans"
           >
-            ←
+            &larr;
           </button>
           <span className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-            Confirmar Pedido
+            {t("o.confirm")}
           </span>
         </div>
         <div className="max-w-sm mx-auto px-5 pt-6">
-          {/* Balance warning */}
           {insufficient && (
             <div
               className="rounded-xl p-4 mb-4"
@@ -939,30 +814,28 @@ function OrderContent() {
               }}
             >
               <p className="text-[var(--bb-coral)] text-sm font-sans font-semibold mb-1">
-                Saldo insuficiente
+                {t("o.insufficient")}
               </p>
               <p className="text-[var(--bb-muted)] text-xs font-sans">
-                Necesitas {fmt(total - session.balance)} más. Recarga tu saldo
-                para continuar.
+                {t("o.need_more", { amount: fmt(total - session.balance) })}
               </p>
               <button
                 onClick={() => setStep("balance")}
                 className="mt-3 bg-[var(--bb-coral)] text-white px-4 py-2 rounded-lg text-sm font-sans font-semibold"
               >
-                Recargar Saldo
+                {t("o.topup_bal")}
               </button>
             </div>
           )}
 
-          {/* Payment method */}
           <p className="text-[var(--bb-sand)] text-[9px] tracking-[2.5px] font-sans font-semibold mb-4">
-            MÉTODO DE PAGO
+            {t("o.pay_method")}
           </p>
           {[
             {
               id: "balance",
-              name: "Mi Balance Bellini",
-              desc: `Saldo: ${fmt(session.balance)}`,
+              name: t("o.my_balance"),
+              desc: `${t("o.bal_label")} ${fmt(session.balance)}`,
               icon: "◎",
               disabled: insufficient,
             },
@@ -994,10 +867,9 @@ function OrderContent() {
             </button>
           ))}
 
-          {/* Order summary */}
           <div className="glass-panel rounded-2xl p-4 mt-5 mb-5">
             <p className="text-[var(--bb-sand)] text-[9px] tracking-[1px] font-sans font-semibold mb-3">
-              RESUMEN
+              {t("o.summary")}
             </p>
             {cart.map((c) => (
               <div
@@ -1005,7 +877,7 @@ function OrderContent() {
                 className="flex justify-between py-1.5 border-b border-[var(--bb-line)]"
               >
                 <span className="text-[var(--bb-cream)] text-xs font-sans">
-                  {c.qty}× {c.name}
+                  {c.qty}&times; {c.name}
                 </span>
                 <span className="text-[var(--bb-sand-mid)] text-xs font-sans">
                   {fmt(c.price * c.qty)}
@@ -1014,7 +886,7 @@ function OrderContent() {
             ))}
             <div className="flex justify-between pt-3">
               <span className="text-[var(--bb-cream)] text-sm font-sans font-bold">
-                Total
+                {t("o.total")}
               </span>
               <span className="text-[var(--bb-sand)] text-lg font-sans font-bold">
                 {fmt(total)}
@@ -1022,7 +894,7 @@ function OrderContent() {
             </div>
             <div className="flex justify-between pt-2 border-t border-[var(--bb-line)] mt-2">
               <span className="text-[var(--bb-muted)] text-xs font-sans">
-                Saldo después
+                {t("o.bal_after")}
               </span>
               <span
                 className={`text-sm font-sans font-semibold ${insufficient ? "text-[var(--bb-coral)]" : "text-[var(--bb-ok)]"}`}
@@ -1032,7 +904,6 @@ function OrderContent() {
             </div>
           </div>
 
-          {/* Confirm button */}
           <button
             onClick={submitOrder}
             disabled={!payMethod || loading || insufficient}
@@ -1041,15 +912,15 @@ function OrderContent() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-[var(--bb-void)] border-t-transparent rounded-full animate-spin" />
-                Procesando...
+                {t("o.processing")}
               </span>
             ) : (
-              `Confirmar Pedido · ${fmt(total)}`
+              `${t("o.confirm")} · ${fmt(total)}`
             )}
           </button>
 
           <p className="text-[var(--bb-muted)] text-[10px] font-sans text-center mt-4">
-            📍 Se entrega en: {session.zone}
+            📍 {t("o.delivery")} {session.zone}
           </p>
         </div>
       </div>
@@ -1068,27 +939,27 @@ function OrderContent() {
               onClick={() => setStep("menu")}
               className="text-[var(--bb-muted)] font-sans"
             >
-              ←
+              &larr;
             </button>
             <span className="text-[var(--bb-cream)] text-sm font-sans font-semibold">
-              Tu Pedido
+              {t("o.your_order")}
             </span>
           </div>
           <span className="text-[var(--bb-muted)] text-xs font-sans">
-            {count} items
+            {count} {count === 1 ? t("o.item") : t("o.items")}
           </span>
         </div>
         <div className="max-w-sm mx-auto px-5 pt-4">
           {cart.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-[var(--bb-muted)] text-sm font-sans mb-4">
-                Tu pedido está vacío
+                {t("o.cart_empty")}
               </p>
               <button
                 onClick={() => setStep("menu")}
                 className="glass-panel px-6 py-3 rounded-lg text-[var(--bb-cream)] text-sm font-sans font-semibold"
               >
-                Ver la Carta
+                {t("o.see_carta")}
               </button>
             </div>
           ) : (
@@ -1103,7 +974,7 @@ function OrderContent() {
                       {c.name}
                     </div>
                     <div className="text-[var(--bb-sand-mid)] text-xs font-sans">
-                      {fmt(c.price)} c/u
+                      {fmt(c.price)} {t("o.each")}
                     </div>
                   </div>
                   <div className="flex items-center gap-2.5">
@@ -1135,17 +1006,16 @@ function OrderContent() {
               ))}
               <div className="flex justify-between py-4 border-t-2 border-[rgba(196,168,130,0.15)]">
                 <span className="text-[var(--bb-cream)] text-base font-sans font-bold">
-                  Total
+                  {t("o.total")}
                 </span>
                 <span className="text-[var(--bb-sand)] text-xl font-sans font-bold">
                   {fmt(total)}
                 </span>
               </div>
 
-              {/* Balance check */}
               <div className="glass-panel rounded-xl p-3 mb-4 flex justify-between items-center">
                 <span className="text-[var(--bb-muted)] text-xs font-sans">
-                  Tu saldo
+                  {t("o.your_bal")}
                 </span>
                 <span
                   className={`text-sm font-sans font-semibold ${total > session.balance ? "text-[var(--bb-coral)]" : "text-[var(--bb-ok)]"}`}
@@ -1158,7 +1028,7 @@ function OrderContent() {
                 onClick={() => setStep("pay")}
                 className="w-full bg-[var(--bb-sand)] text-[var(--bb-void)] py-3.5 rounded-xl text-sm font-sans font-bold"
               >
-                Continuar al Pago
+                {t("o.to_pay")}
               </button>
             </>
           )}
@@ -1176,16 +1046,14 @@ function OrderContent() {
         className="min-h-screen bg-[var(--bb-void)]"
         style={{ paddingBottom: cart.length > 0 ? 76 : 16 }}
       >
-        {/* Offline banner */}
         {!online && (
           <div className="offline-bar px-4 py-2 text-center">
             <span className="text-[var(--bb-warn)] text-[11px] font-sans font-semibold">
-              ⚡ Modo Offline — Tu pedido se enviará al reconectar
+              ⚡ {t("o.offline")}
             </span>
           </div>
         )}
 
-        {/* Header with balance */}
         <div className="sticky top-0 z-10 bg-[var(--bb-void)] border-b border-[var(--bb-line)] px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -1193,7 +1061,7 @@ function OrderContent() {
                 onClick={() => setStep("zone")}
                 className="text-[var(--bb-muted)] font-sans text-sm"
               >
-                ←
+                &larr;
               </button>
               <div>
                 <div className="text-[13px] font-serif font-normal text-[var(--bb-cream)] tracking-[1.5px]">
@@ -1210,7 +1078,7 @@ function OrderContent() {
                   {fmt(session.balance)}
                 </div>
                 <div className="text-[8px] text-[var(--bb-muted)] font-sans">
-                  Saldo
+                  {t("o.balance")}
                 </div>
               </div>
               <div className="text-[8px] font-sans font-bold px-2 py-0.5 rounded bg-[rgba(90,158,111,0.12)] text-[var(--bb-ok)]">
@@ -1236,7 +1104,7 @@ function OrderContent() {
                   : "text-[var(--bb-muted)]"
               }`}
             >
-              {c}
+              {catName(c, lang)}
             </button>
           ))}
         </div>
@@ -1257,13 +1125,13 @@ function OrderContent() {
                     </span>
                     {item.pop && (
                       <span className="text-[7px] tracking-[1px] font-sans font-bold px-1.5 py-0.5 rounded bg-[rgba(196,101,74,0.12)] text-[var(--bb-coral)]">
-                        POPULAR
+                        {t("o.popular")}
                       </span>
                     )}
                   </div>
-                  {item.desc && (
+                  {(item.desc || item.descEn) && (
                     <p className="text-[var(--bb-muted)] text-[11px] font-sans leading-relaxed mt-0.5">
-                      {item.desc}
+                      {desc(item)}
                     </p>
                   )}
                   <div className="text-[var(--bb-sand-mid)] text-sm font-sans font-semibold mt-1">
@@ -1320,7 +1188,7 @@ function OrderContent() {
               className="w-full flex items-center justify-between bg-[var(--bb-sand)] text-[var(--bb-void)] px-5 py-3.5 rounded-xl"
             >
               <span className="text-sm font-sans font-bold">
-                Ver Pedido · {count} {count === 1 ? "item" : "items"}
+                {t("o.view_order")} · {count} {count === 1 ? t("o.item") : t("o.items")}
               </span>
               <span className="text-base font-sans font-bold">
                 {fmt(total)}
@@ -1332,8 +1200,83 @@ function OrderContent() {
     );
   }
 
-  // Fallback
   return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// REAL-TIME ORDER STATUS TRACKER
+// ══════════════════════════════════════════════════════════════════
+
+function OrderStatusTracker({ orderId }: { orderId: string }) {
+  const { lang } = useLanguage();
+  const [status, setStatus] = useState<string>("pending");
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`order-${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          const newStatus = (payload.new as { status: string }).status;
+          setStatus(newStatus);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId]);
+
+  const steps = [
+    { key: "pending", es: "Recibido", en: "Received" },
+    { key: "preparing", es: "Preparando", en: "Preparing" },
+    { key: "ready", es: "Listo", en: "Ready" },
+    { key: "delivered", es: "Entregado", en: "Delivered" },
+  ];
+
+  const currentIdx = steps.findIndex((s) => s.key === status);
+
+  return (
+    <div className="glass-panel rounded-2xl p-4 mb-6">
+      <div className="flex items-center justify-between">
+        {steps.map((s, i) => (
+          <div key={s.key} className="flex items-center">
+            <div className="text-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-sans font-bold mb-1 transition-all ${
+                  i <= currentIdx
+                    ? "bg-[var(--bb-ok)] text-[var(--bb-void)]"
+                    : "bg-[var(--bb-faint)] text-[var(--bb-muted)]"
+                }`}
+              >
+                {i <= currentIdx ? "✓" : i + 1}
+              </div>
+              <span className={`text-[9px] font-sans ${i <= currentIdx ? "text-[var(--bb-ok)]" : "text-[var(--bb-muted)]"}`}>
+                {lang === "en" ? s.en : s.es}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={`w-6 h-0.5 mx-1 mt-[-12px] transition-all ${
+                  i < currentIdx ? "bg-[var(--bb-ok)]" : "bg-[var(--bb-line)]"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1343,20 +1286,24 @@ function OrderContent() {
 export default function OrderPage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen bg-[var(--bb-void)] flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-2xl font-serif font-light text-[var(--bb-cream)] tracking-[3px] mb-2">
-              BETHEL BELLINI
-            </div>
-            <div className="text-[9px] font-sans text-[var(--bb-muted)] tracking-[2px]">
-              Cargando ISLA OS...
-            </div>
-          </div>
-        </div>
-      }
+      fallback={<OrderFallback />}
     >
       <OrderContent />
     </Suspense>
+  );
+}
+
+function OrderFallback() {
+  return (
+    <div className="min-h-screen bg-[var(--bb-void)] flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-2xl font-serif font-light text-[var(--bb-cream)] tracking-[3px] mb-2">
+          BETHEL BELLINI
+        </div>
+        <div className="text-[9px] font-sans text-[var(--bb-muted)] tracking-[2px]">
+          Loading ISLA OS...
+        </div>
+      </div>
+    </div>
   );
 }

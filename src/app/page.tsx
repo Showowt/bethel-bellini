@@ -230,17 +230,23 @@ const fmt = (n: number) => `$ ${n.toLocaleString("es-CO")}`;
 const GALLERY = [
   {
     src: "/gallery/venue-2.jpg",
-    alt: "Llegada al paraíso — Muelle con trono dorado",
+    alt: "Muelle de llegada al beach club Bethel Bellini en Isla Tierra Bomba, Cartagena",
   },
-  { src: "/gallery/venue-1.jpg", alt: "Entrada Bethel Bellini" },
-  { src: "/gallery/food-1.jpg", alt: "Arroz meloso de mariscos" },
+  {
+    src: "/gallery/venue-1.jpg",
+    alt: "Entrada del beach club con arquitectura artesanal en Isla Tierra Bomba, Cartagena",
+  },
+  {
+    src: "/gallery/food-1.jpg",
+    alt: "Arroz meloso de mariscos — Gastronomía caribeña premium en Bethel Bellini Beach Club, Cartagena",
+  },
   {
     src: "/gallery/venue-3.jpg",
-    alt: "Vista al mar desde arquitectura de bambú",
+    alt: "Vista panorámica al mar Caribe desde el beach club en Isla Tierra Bomba, Cartagena",
   },
   {
     src: "/gallery/vibes-1.jpg",
-    alt: "Noches mágicas con iluminación escénica",
+    alt: "Fiesta nocturna y pool party en Bethel Bellini Beach Club, Cartagena",
   },
 ];
 
@@ -368,7 +374,7 @@ export default function Home() {
         <div className="absolute inset-0 z-0">
           <Image
             src="/hero-bg.jpg"
-            alt="Bethel Bellini Beach Club"
+            alt="Bethel Bellini Beach Club — Beach club con piscina infinity y playa privada en Isla Tierra Bomba, Cartagena"
             fill
             className="object-cover"
             priority
@@ -380,14 +386,18 @@ export default function Home() {
           <div className="animate-fade-up">
             <Image
               src="/logo.svg"
-              alt="Bethel Bellini"
+              alt="Bethel Bellini Beach Club — El Mejor Beach Club en Cartagena, Isla Tierra Bomba"
               width={200}
               height={80}
               className="mx-auto mb-8 w-48 md:w-64 h-auto"
             />
           </div>
+          <h1 className="sr-only">
+            Bethel Bellini Beach Club — El Mejor Beach Club, Fiestas y Pool
+            Party en Cartagena, Isla Tierra Bomba
+          </h1>
           <p className="animate-fade-up delay-200 text-[var(--bb-sand-mid)] text-xs tracking-[4px] font-sans font-medium mb-6">
-            Isla Tierra Bomba · Cartagena
+            Isla Tierra Bomba · Cartagena de Indias
           </p>
           <div className="animate-fade-up delay-300 flex gap-3 justify-center flex-wrap">
             <a
@@ -421,7 +431,7 @@ export default function Home() {
           <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
             <Image
               src="/gallery/venue-2.jpg"
-              alt="Llegada al paraíso"
+              alt="Muelle de llegada al mejor beach club en Isla Tierra Bomba, Cartagena — Bethel Bellini"
               fill
               className="object-cover"
             />
@@ -432,21 +442,23 @@ export default function Home() {
               NUESTRA HISTORIA
             </p>
             <h2 className="text-3xl md:text-4xl font-serif font-light text-[var(--bb-cream)] mb-6 leading-tight">
-              El Reino del
+              El Beach Club Más Exclusivo
               <br />
-              Realismo Mágico
+              de Cartagena
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans leading-relaxed mb-6">
               Para quienes ya lo han visto todo y aún buscan lo que el mundo no
-              ofrece. A tan solo 5 minutos de Cartagena, en la isla ancestral de
-              Tierra Bomba.
+              ofrece. El mejor beach club de Cartagena, a tan solo 5 minutos en
+              lancha desde Bocagrande, en la isla ancestral de Tierra Bomba.
             </p>
             <p className="text-[var(--bb-cream)] text-sm font-sans leading-relaxed mb-6">
-              Arquitectura hecha a mano. Mar abierto al horizonte. Un sonido que
-              guía lo que está por venir.
+              Piscina infinity, playa privada, gastronomía de autor, cócteles
+              artesanales y fiestas con los mejores DJs. Arquitectura hecha a
+              mano con vista al mar Caribe abierto.
             </p>
             <p className="text-[var(--bb-sand-mid)] text-sm font-serif italic">
-              Bethel Bellini — Único, exclusivo y mundial.
+              Bethel Bellini — El destino de fiesta y beach club #1 en
+              Cartagena.
             </p>
             <div className="flex gap-8 mt-8">
               {[
@@ -662,10 +674,12 @@ export default function Home() {
               GASTRONOMÍA DEL CARIBE
             </p>
             <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
-              Nuestra Carta
+              Restaurante en Isla Tierra Bomba
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans">
               Cocina de autor con raíces caribeñas y toques mediterráneos.
+              Mariscos frescos, cortes Angus premium, cócteles artesanales y
+              champagne.
             </p>
           </div>
 
@@ -803,10 +817,11 @@ export default function Home() {
               GALERÍA
             </p>
             <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
-              El Reino del Realismo Mágico
+              Fotos del Mejor Beach Club en Cartagena
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans">
-              Arquitectura hecha a mano. Mar abierto al horizonte.
+              Arquitectura hecha a mano. Piscina infinity. Playa privada. Fiestas
+              inolvidables.
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -849,13 +864,14 @@ export default function Home() {
         <div className="max-w-md mx-auto px-6">
           <div className="text-center mb-8">
             <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-3">
-              EXPERIENCIA
+              RESERVACIONES
             </p>
             <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
-              Reservar Mesa
+              Reserva tu Pasadía en Isla Tierra Bomba
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans">
-              Asegura tu lugar en el Reino del Realismo Mágico
+              Asegura tu lugar en el mejor beach club de Cartagena. Fiestas
+              privadas, cumpleaños y celebraciones.
             </p>
           </div>
           <form
@@ -941,6 +957,107 @@ export default function Home() {
       </section>
 
       {/* ════════════════════════════════════════════
+          FAQ — Long-tail SEO
+          ════════════════════════════════════════════ */}
+      <section id="faq" className="py-16 md:py-24">
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="text-center mb-10">
+            <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-3">
+              PREGUNTAS FRECUENTES
+            </p>
+            <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
+              Todo sobre el Beach Club en Cartagena
+            </h2>
+          </div>
+          <div className="space-y-0">
+            {[
+              {
+                q: "¿Cómo llegar a Bethel Bellini en Isla Tierra Bomba?",
+                a: "Bethel Bellini está en Isla Tierra Bomba, a solo 5 minutos en lancha desde el muelle de Bocagrande, Cartagena. Ofrecemos servicio de transporte. Contacta al +57 315 113 4606 para coordinar tu llegada.",
+              },
+              {
+                q: "¿Cuánto cuesta la entrada al beach club?",
+                a: "Bethel Bellini funciona con sistema de consumo. Al llegar cargas tu saldo en tu banda inteligente y todo se descuenta automáticamente. No hay cover adicional.",
+              },
+              {
+                q: "¿Bethel Bellini tiene piscina infinity y playa privada?",
+                a: "Sí. Contamos con piscina infinity con vista al mar Caribe, acceso directo a playa privada con camastros, cabañas VIP, terraza sunset y bar central.",
+              },
+              {
+                q: "¿Se puede hacer una fiesta privada, cumpleaños o bachelorette?",
+                a: "Sí. Organizamos fiestas privadas, cumpleaños en la playa, despedidas de solteros, bachelorette parties, eventos corporativos y celebraciones exclusivas con DJ, decoración personalizada y menú a medida.",
+              },
+              {
+                q: "¿Qué tipo de comida sirven?",
+                a: "Cocina de autor caribeña-mediterránea: ceviches, pulpo rostizado, mariscos, cortes Angus premium (Rib Eye, Cowboy 1kg), pastas artesanales, pizzas, hamburguesas gourmet. Bar con más de 20 cócteles artesanales, champagne (Dom Pérignon, Veuve Clicquot) y tragos premium.",
+              },
+              {
+                q: "What is the best beach club in Cartagena, Colombia?",
+                a: "Bethel Bellini Beach Club on Tierra Bomba Island is the best beach club in Cartagena. Just 5 minutes by boat from Bocagrande, featuring an infinity pool, private beach, premium gastronomy, craft cocktails, DJ sets, and the most stunning Caribbean views.",
+              },
+              {
+                q: "¿Cuál es el horario del beach club?",
+                a: "Lunes a jueves: 10:00 – 18:00. Viernes y sábado: 10:00 – 22:00. Domingos: 10:00 – 20:00. Los horarios se extienden en fiestas y eventos especiales.",
+              },
+              {
+                q: "¿Es buen plan para una despedida de solteros en Cartagena?",
+                a: "Bethel Bellini es el destino #1 en Cartagena para despedidas de solteros y bachelorette parties. Cabañas privadas, servicio VIP de botellas, DJ, piscina, playa y la mejor energía de fiesta en una isla privada.",
+              },
+            ].map((faq, i) => (
+              <details
+                key={i}
+                className="group border-b border-[var(--bb-line)]"
+              >
+                <summary className="flex items-center justify-between py-5 cursor-pointer list-none">
+                  <h3 className="text-[var(--bb-cream)] text-sm font-sans font-semibold pr-4">
+                    {faq.q}
+                  </h3>
+                  <span className="text-[var(--bb-sand)] text-lg shrink-0 group-open:rotate-45 transition-transform">
+                    +
+                  </span>
+                </summary>
+                <p className="text-[var(--bb-muted)] text-sm font-sans leading-relaxed pb-5 pr-8">
+                  {faq.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
+          SEO CONTENT BLOCK (crawlable, keyword-rich)
+          ════════════════════════════════════════════ */}
+      <section
+        className="py-12 border-t border-[var(--bb-line)]"
+        style={{ background: "var(--bb-earth)" }}
+      >
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h2 className="text-lg font-serif font-light text-[var(--bb-cream)] mb-4">
+            Bethel Bellini — Beach Club, Fiestas y Pool Party en Cartagena
+          </h2>
+          <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed mb-4">
+            Bethel Bellini Beach Club es el mejor club de playa de Cartagena de
+            Indias, ubicado en la paradisíaca Isla Tierra Bomba a solo 5 minutos
+            en lancha desde Bocagrande. Con piscina infinity, playa privada,
+            cabañas VIP, restaurante de cocina caribeña premium y bar de
+            cócteles artesanales, es el destino perfecto para fiestas, pool
+            parties, cumpleaños, despedidas de solteros, bachelorette parties,
+            eventos corporativos y pasadías exclusivos.
+          </p>
+          <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed">
+            Bethel Bellini Beach Club is the #1 beach club in Cartagena,
+            Colombia. Located on Tierra Bomba Island just 5 minutes from
+            Bocagrande by boat. Featuring infinity pool, private beach, VIP
+            cabanas, premium Caribbean cuisine, craft cocktails, DJ sets, and
+            the best parties in Cartagena. Perfect for bachelor parties,
+            bachelorette celebrations, birthday events, and day trips from
+            Cartagena.
+          </p>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════
           FOOTER
           ════════════════════════════════════════════ */}
       <footer
@@ -957,9 +1074,9 @@ export default function Home() {
               className="h-8 w-auto mb-4"
             />
             <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed">
-              El Reino del Realismo Mágico. Arquitectura hecha a mano, mar
-              abierto al horizonte. Isla Tierra Bomba, a solo 5 minutos de
-              Cartagena.
+              El mejor beach club de Cartagena. Piscina infinity, playa privada,
+              fiestas y gastronomía premium. Isla Tierra Bomba, a solo 5 minutos
+              en lancha desde Bocagrande.
             </p>
           </div>
           <div>

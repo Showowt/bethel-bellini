@@ -2,9 +2,10 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useLanguage, LanguageToggle, catName, HOME_ZONES } from "@/lib/i18n";
 
 /* ═══════════════════════════════════════════════════════════════
-   BETHEL BELLINI — Main Site with Integrated ISLA OS
+   BETHEL BELLINI — Main Site with Integrated ISLA OS (Bilingual)
    ═══════════════════════════════════════════════════════════════ */
 
 // ── MENU DATA (real menu from the venue) ──
@@ -14,6 +15,7 @@ const MENU_DATA: Record<
     name: string;
     price: number;
     desc?: string;
+    descEn?: string;
     img?: string;
     chef?: boolean;
     premium?: boolean;
@@ -24,6 +26,7 @@ const MENU_DATA: Record<
       name: "Risotto Negro",
       price: 135000,
       desc: "En tinta de calamar con Langostinos rostizados",
+      descEn: "Squid ink with roasted langoustines",
       img: "/gallery/food-1.jpg",
       chef: true,
     },
@@ -31,13 +34,15 @@ const MENU_DATA: Record<
       name: "Cowboy 1 kg",
       price: 650000,
       desc: "Corte premium Black Angus para compartir",
+      descEn: "Premium Black Angus cut for sharing",
       img: "/gallery/venue-3.jpg",
       premium: true,
     },
     {
       name: "Pulpo Rostizado",
       price: 65000,
-      desc: "Sobre puré cremoso de yuca y chimichurri",
+      desc: "Sobre pure cremoso de yuca y chimichurri",
+      descEn: "Over creamy yuca puree and chimichurri",
       img: "/gallery/food-1.jpg",
     },
   ],
@@ -45,60 +50,71 @@ const MENU_DATA: Record<
     {
       name: "Rollitos Crocantes",
       price: 65000,
-      desc: "Rellenos de rabo de toro con sus jugos de cocción lenta, mayonesa de hongos y queso de cabra.",
+      desc: "Rellenos de rabo de toro con sus jugos de coccion lenta, mayonesa de hongos y queso de cabra.",
+      descEn: "Stuffed with braised oxtail, mushroom mayo and goat cheese.",
       chef: true,
     },
     {
       name: "Tiradito de Pescado Blanco",
       price: 65000,
       desc: "En aderezo acevichado de carambola, cebollitas encurtidas, pimientos tatemados, y aceite de eneldo.",
+      descEn: "In star fruit ceviche dressing, pickled onions, charred peppers, and dill oil.",
     },
     {
       name: "Ceviche de Pescado Blanco",
       price: 65000,
-      desc: "Marinado al estilo mediterráneo con leche de coco, cremoso de pimientos ahumados, salsa huancaína, sobre pan ciabatta tostado.",
+      desc: "Marinado al estilo mediterraneo con leche de coco, cremoso de pimientos ahumados, salsa huancaina, sobre pan ciabatta tostado.",
+      descEn: "Mediterranean-style with coconut milk, smoked pepper cream, huancaina sauce, on toasted ciabatta.",
     },
     {
       name: "Tartar de Res",
       price: 65000,
       desc: "Carne de res finamente picada, cremoso de aguacate, pan de masa madre tostado, alioli, aceite de trufa blanca.",
+      descEn: "Finely diced beef, avocado cream, sourdough toast, aioli, white truffle oil.",
       chef: true,
     },
     {
-      name: "Tostada de Salmón",
+      name: "Tostada de Salmon",
       price: 60000,
-      desc: "Salmón curado 48hrs con piel de naranja y limón, queso crema, cebollitas encurtidas, mayonesa de eneldo.",
+      desc: "Salmon curado 48hrs con piel de naranja y limon, queso crema, cebollitas encurtidas, mayonesa de eneldo.",
+      descEn: "48-hour cured salmon with orange and lemon peel, cream cheese, pickled onions, dill mayo.",
       premium: true,
     },
     {
-      name: "Taquitos de Camarón",
+      name: "Taquitos de Camaron",
       price: 60000,
       desc: "Salteados en mantequilla de ajo con vino blanco y paprika, alioli, aguacate majado, mayonesa de eneldo.",
+      descEn: "Sauteed in garlic butter with white wine and paprika, aioli, mashed avocado, dill mayo.",
     },
     {
-      name: "Tartar de Salmón",
+      name: "Tartar de Salmon",
       price: 65000,
-      desc: "Marinado en yogur griego de búfala, pimentón rojo, pepino, albahaca y hierbabuena, en pan pita crujiente.",
+      desc: "Marinado en yogur griego de bufala, pimenton rojo, pepino, albahaca y hierbabuena, en pan pita crujiente.",
+      descEn: "Marinated in buffalo yogurt, red pepper, cucumber, basil and mint, on crispy pita.",
     },
     {
-      name: "Tartar de Atún",
+      name: "Tartar de Atun",
       price: 65000,
       desc: "Con mango y aguacate, aceite de olivas, mayonesa de aceitunas kalamata, hierbabuena, sobre pan tostado.",
+      descEn: "With mango and avocado, olive oil, kalamata olive mayo, mint, on toast.",
     },
     {
       name: "Berenjena Tres Quesos",
       price: 60000,
       desc: "En salsa pomodoro italiana, albahaca, miel ahumada de la casa y aceite trufado.",
+      descEn: "In Italian pomodoro sauce, basil, house smoked honey and truffle oil.",
     },
     {
       name: "Bruschetta Capresse",
       price: 65000,
-      desc: "Pan de masa madre con pesto de albahaca, tomates horneados, bocconcini di búfala y aguacate majado.",
+      desc: "Pan de masa madre con pesto de albahaca, tomates horneados, bocconcini di bufala y aguacate majado.",
+      descEn: "Sourdough with basil pesto, roasted tomatoes, buffalo bocconcini and mashed avocado.",
     },
     {
       name: "Wrap de Pollo Parrillado",
       price: 55000,
       desc: "Con cebollas y pimientos rostizados, mozzarella y mayonesa picante.",
+      descEn: "With roasted onions and peppers, mozzarella and spicy mayo.",
     },
   ],
   Pasta: [
@@ -106,27 +122,32 @@ const MENU_DATA: Record<
       name: "Penne al Pesto",
       price: 55000,
       desc: "Salsa pesto de albahaca, aceite de oliva, ajo, nueces y parmesano.",
+      descEn: "Basil pesto, olive oil, garlic, walnuts and parmesan.",
     },
     {
       name: "Penne a la Carbonara",
       price: 65000,
       desc: "Cremosa salsa de yema de huevo, parmesano y panceta dorada.",
+      descEn: "Creamy egg yolk sauce, parmesan and golden pancetta.",
     },
     {
       name: "Penne a la Marinera",
       price: 65000,
-      desc: "Base de tomate con almejas, mejillones, calamar y camarón.",
+      desc: "Base de tomate con almejas, mejillones, calamar y camaron.",
+      descEn: "Tomato base with clams, mussels, squid and shrimp.",
     },
     {
       name: "Penne al Pistacho",
       price: 65000,
       desc: "Cremosa salsa de pistachos, parmesano, aceite de trufa blanca, tostadas de baguette.",
+      descEn: "Creamy pistachio sauce, parmesan, white truffle oil, baguette toasts.",
       premium: true,
     },
     {
       name: "Penne a la Puttanesca",
       price: 65000,
       desc: "Salsa de tomate con aceitunas, alcaparras, ajo y anchoas.",
+      descEn: "Tomato sauce with olives, capers, garlic and anchovies.",
     },
   ],
   Pescado: [
@@ -134,46 +155,54 @@ const MENU_DATA: Record<
       name: "Arroz Meloso de Mariscos",
       price: 80000,
       desc: "Mix de mariscos al ajillo en arroz cremoso, sofrito de tomates y pimientos rostizados.",
+      descEn: "Garlic seafood mix in creamy rice, roasted tomato and pepper sofrito.",
       chef: true,
     },
     {
       name: "Risotto Negro",
       price: 135000,
       desc: "Tinta de calamar, langostinos en mantequilla ahumada de paprika y vino blanco.",
+      descEn: "Squid ink, langoustines in smoked paprika butter and white wine.",
       premium: true,
     },
     {
       name: "Fish & Chips",
       price: 70000,
-      desc: "Pescado blanco rebozado con chips de papa artesanal y salsa tártara.",
+      desc: "Pescado blanco rebozado con chips de papa artesanal y salsa tartara.",
+      descEn: "Battered white fish with artisanal potato chips and tartar sauce.",
     },
     {
       name: "Mejillones Provenzal",
       price: 70000,
       desc: "Mantequilla de ajo, vino blanco, caldo de pescado, perejil, tostones de masa madre.",
+      descEn: "Garlic butter, white wine, fish broth, parsley, sourdough croutons.",
     },
     {
       name: "Tilapia a la Plancha",
       price: 65000,
       desc: "Filete fresco sazonado, exterior dorado y jugoso por dentro.",
+      descEn: "Fresh seasoned fillet, golden exterior and juicy inside.",
     },
     {
       name: "Fettuccini Marinera",
       price: 65000,
       desc: "Mix de mariscos al ajillo, caldo de pescado, vino blanco, peperoncino.",
+      descEn: "Garlic seafood mix, fish broth, white wine, peperoncino.",
     },
   ],
   "Cortes Angus": [
     {
-      name: "Entraña 350g",
+      name: "Entrana 350g",
       price: 235000,
       desc: "Corte fino y jugoso a la parrilla con sal marina y mantequilla de hierbas.",
+      descEn: "Fine and juicy grilled cut with sea salt and herb butter.",
       premium: true,
     },
     {
       name: "Cowboy 1 kg",
       price: 650000,
       desc: "Corte premium jugoso, ideal para compartir.",
+      descEn: "Premium juicy cut, ideal for sharing.",
       chef: true,
       premium: true,
     },
@@ -181,25 +210,28 @@ const MENU_DATA: Record<
       name: "Rib Eye 350g",
       price: 285000,
       desc: "Marmoleado y tierno, sellado a fuego alto.",
+      descEn: "Marbled and tender, seared at high heat.",
       premium: true,
     },
     {
-      name: "Picaña 350g",
+      name: "Picana 350g",
       price: 195000,
       desc: "Jugoso con capa de grasa dorada y crujiente.",
+      descEn: "Juicy with golden crispy fat cap.",
       premium: true,
     },
     {
       name: "New York 300g",
       price: 235000,
-      desc: "Firme, sellado al carbón, jugosidad y sabor ahumado.",
+      desc: "Firme, sellado al carbon, jugosidad y sabor ahumado.",
+      descEn: "Firm, charcoal-seared, smoky and juicy.",
       premium: true,
     },
   ],
-  Cócteles: [
+  Cocteles: [
     { name: "Aperol Spritz", price: 65000 },
     { name: "Mojito", price: 65000 },
-    { name: "Piña Colada", price: 65000 },
+    { name: "Pina Colada", price: 65000 },
     { name: "Paloma", price: 65000 },
     { name: "Tequila Sunrise", price: 65000 },
     { name: "Moscow Mule", price: 65000 },
@@ -208,16 +240,16 @@ const MENU_DATA: Record<
   ],
   Champagne: [
     { name: "Veuve Clicquot", price: 1100000, premium: true },
-    { name: "Dom Pérignon", price: 3000000, premium: true },
-    { name: "Moët Impérial", price: 900000, premium: true },
+    { name: "Dom Perignon", price: 3000000, premium: true },
+    { name: "Moet Imperial", price: 900000, premium: true },
     { name: "Chandon Brut", price: 230000 },
   ],
   "Tragos Premium": [
     { name: "Montelobos", price: 70000 },
     { name: "Ojo de Tigre", price: 60000 },
-    { name: "Patrón Silver", price: 65000 },
-    { name: "Patrón Reposado", price: 70000 },
-    { name: "Patrón Cristalino", price: 90000, premium: true },
+    { name: "Patron Silver", price: 65000 },
+    { name: "Patron Reposado", price: 70000 },
+    { name: "Patron Cristalino", price: 90000, premium: true },
     { name: "Don Julio 70", price: 90000, premium: true },
     { name: "Grey Goose", price: 85000, premium: true },
     { name: "SKY", price: 60000 },
@@ -230,29 +262,40 @@ const fmt = (n: number) => `$ ${n.toLocaleString("es-CO")}`;
 const GALLERY = [
   {
     src: "/gallery/venue-2.jpg",
-    alt: "Llegada al paraíso — Muelle con trono dorado",
+    alt: "Llegada al paraiso — Muelle con trono dorado",
+    altEn: "Arrival to paradise — Dock with golden throne",
   },
-  { src: "/gallery/venue-1.jpg", alt: "Entrada Bethel Bellini" },
-  { src: "/gallery/food-1.jpg", alt: "Arroz meloso de mariscos" },
+  {
+    src: "/gallery/venue-1.jpg",
+    alt: "Entrada Bethel Bellini",
+    altEn: "Bethel Bellini entrance",
+  },
+  {
+    src: "/gallery/food-1.jpg",
+    alt: "Arroz meloso de mariscos",
+    altEn: "Seafood rice",
+  },
   {
     src: "/gallery/venue-3.jpg",
-    alt: "Vista al mar desde arquitectura de bambú",
+    alt: "Vista al mar desde arquitectura de bambu",
+    altEn: "Ocean view from bamboo architecture",
   },
   {
     src: "/gallery/vibes-1.jpg",
-    alt: "Noches mágicas con iluminación escénica",
+    alt: "Noches magicas con iluminacion escenica",
+    altEn: "Magical nights with scenic lighting",
   },
 ];
 
-const ZONES = [
-  { name: "Playa Bellini", icon: "◎", color: "#C4654A" },
-  { name: "La Piscina", icon: "◉", color: "#2A6B7C" },
-  { name: "Cabañas Privadas", icon: "◈", color: "#D4923A" },
-  { name: "Bar del Mar", icon: "◆", color: "#3A5E3A" },
-  { name: "Terraza Atardecer", icon: "◇", color: "#7A5A6A" },
+const NAV_ITEMS = [
+  { key: "nav.home", href: "#inicio" },
+  { key: "nav.menu", href: "#menu" },
+  { key: "nav.gallery", href: "#galeria" },
+  { key: "nav.reserve", href: "#reservar" },
 ];
 
 export default function Home() {
+  const { lang, t } = useLanguage();
   const [scrollY, setScrollY] = useState(0);
   const [menuTab, setMenuTab] = useState("Destacados");
   const [navOpen, setNavOpen] = useState(false);
@@ -268,6 +311,7 @@ export default function Home() {
   }, []);
 
   const headerBg = Math.min(scrollY / 300, 0.95);
+  const zones = HOME_ZONES[lang];
 
   return (
     <main>
@@ -298,36 +342,38 @@ export default function Home() {
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-6">
-            {["Inicio", "Menú", "Galería", "Reservar"].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase().replace("ú", "u")}`}
+                key={item.key}
+                href={item.href}
                 className="text-[11px] tracking-[2px] uppercase font-sans font-medium text-[var(--bb-muted)] hover:text-[var(--bb-sand)] transition-colors"
               >
-                {item}
+                {t(item.key)}
               </a>
             ))}
+            <LanguageToggle />
             <Link
               href="/order"
               className="bg-[var(--bb-sand)] text-[var(--bb-void)] px-5 py-2 rounded-md text-[11px] font-bold tracking-[0.5px] font-sans hover:brightness-110 transition-all"
             >
-              PEDIR AHORA
+              {t("nav.order")}
             </Link>
           </nav>
 
           {/* Mobile menu button */}
           <div className="flex md:hidden items-center gap-3">
+            <LanguageToggle />
             <Link
               href="/order"
               className="bg-[var(--bb-sand)] text-[var(--bb-void)] px-4 py-2 rounded-md text-[11px] font-bold tracking-[0.5px] font-sans"
             >
-              PEDIR
+              {t("nav.order_short")}
             </Link>
             <button
               onClick={() => setNavOpen(!navOpen)}
               className="text-[var(--bb-muted)] text-xl"
             >
-              {navOpen ? "✕" : "☰"}
+              {navOpen ? "\u2715" : "\u2630"}
             </button>
           </div>
         </div>
@@ -338,14 +384,14 @@ export default function Home() {
             className="md:hidden px-5 pb-4 animate-fade-in"
             style={{ background: "rgba(10,9,7,0.98)" }}
           >
-            {["Inicio", "Menú", "Galería", "Reservar"].map((item) => (
+            {NAV_ITEMS.map((item) => (
               <a
-                key={item}
-                href={`#${item.toLowerCase().replace("ú", "u")}`}
+                key={item.key}
+                href={item.href}
                 onClick={() => setNavOpen(false)}
                 className="block py-3 text-sm text-[var(--bb-cream)] border-b border-[var(--bb-line)] font-sans"
               >
-                {item}
+                {t(item.key)}
               </a>
             ))}
             <a
@@ -387,20 +433,20 @@ export default function Home() {
             />
           </div>
           <p className="animate-fade-up delay-200 text-[var(--bb-sand-mid)] text-xs tracking-[4px] font-sans font-medium mb-6">
-            Isla Tierra Bomba · Cartagena
+            {t("hero.location")}
           </p>
           <div className="animate-fade-up delay-300 flex gap-3 justify-center flex-wrap">
             <a
               href="#reservar"
               className="bg-[var(--bb-sand)] text-[var(--bb-void)] px-7 py-3 rounded-md text-sm font-bold font-sans hover:brightness-110 transition-all"
             >
-              Reservar Mesa
+              {t("hero.reserve")}
             </a>
             <Link
               href="/order"
               className="glass-panel px-7 py-3 rounded-md text-sm font-semibold font-sans text-[var(--bb-cream)] hover:bg-[rgba(196,168,130,0.12)] transition-all"
             >
-              Pedir desde tu Zona
+              {t("hero.order")}
             </Link>
           </div>
         </div>
@@ -408,7 +454,7 @@ export default function Home() {
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-breathe text-center">
           <div className="w-px h-8 bg-gradient-to-b from-transparent to-[var(--bb-sand)] mx-auto mb-2" />
           <span className="text-[var(--bb-sand)] text-[8px] tracking-[3px] font-sans font-semibold">
-            SCROLL
+            {t("hero.scroll")}
           </span>
         </div>
       </section>
@@ -421,7 +467,7 @@ export default function Home() {
           <div className="relative aspect-[3/4] rounded-2xl overflow-hidden">
             <Image
               src="/gallery/venue-2.jpg"
-              alt="Llegada al paraíso"
+              alt={lang === "en" ? "Arrival to paradise" : "Llegada al paraiso"}
               fill
               className="object-cover"
             />
@@ -429,30 +475,27 @@ export default function Home() {
           </div>
           <div>
             <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-4">
-              NUESTRA HISTORIA
+              {t("story.label")}
             </p>
             <h2 className="text-3xl md:text-4xl font-serif font-light text-[var(--bb-cream)] mb-6 leading-tight">
-              El Reino del
+              {t("story.title1")}
               <br />
-              Realismo Mágico
+              {t("story.title2")}
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans leading-relaxed mb-6">
-              Para quienes ya lo han visto todo y aún buscan lo que el mundo no
-              ofrece. A tan solo 5 minutos de Cartagena, en la isla ancestral de
-              Tierra Bomba.
+              {t("story.p1")}
             </p>
             <p className="text-[var(--bb-cream)] text-sm font-sans leading-relaxed mb-6">
-              Arquitectura hecha a mano. Mar abierto al horizonte. Un sonido que
-              guía lo que está por venir.
+              {t("story.p2")}
             </p>
             <p className="text-[var(--bb-sand-mid)] text-sm font-serif italic">
-              Bethel Bellini — Único, exclusivo y mundial.
+              {t("story.tagline")}
             </p>
             <div className="flex gap-8 mt-8">
               {[
-                ["5", "Minutos de Cartagena"],
-                ["∞", "Vista al Mar"],
-                ["365", "Días de Sol"],
+                ["5", t("story.stat_min")],
+                ["\u221E", t("story.stat_ocean")],
+                ["365", t("story.stat_sun")],
               ].map(([v, l]) => (
                 <div key={l} className="text-center">
                   <div className="text-2xl font-serif text-[var(--bb-sand)] mb-1">
@@ -469,8 +512,7 @@ export default function Home() {
       </section>
 
       {/* ════════════════════════════════════════════
-          ★ ISLA OS — ORDER FROM YOUR ZONE ★
-          (The integrated ordering showcase)
+          ISLA OS — ORDER FROM YOUR ZONE
           ════════════════════════════════════════════ */}
       <section
         id="pedir"
@@ -482,35 +524,22 @@ export default function Home() {
       >
         <div className="max-w-xl mx-auto px-6 text-center mb-10">
           <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-3">
-            EXPERIENCIA SIN ESFUERZO
+            {t("isla.label")}
           </p>
           <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-4">
-            Pide desde tu Paraíso
+            {t("isla.title")}
           </h2>
           <p className="text-[var(--bb-muted)] text-sm font-sans leading-relaxed">
-            Sin hacer fila. Sin esperar meseros. Tu bebida llega a donde estés.
-            Escanea, pide, disfruta.
+            {t("isla.subtitle")}
           </p>
         </div>
 
         {/* 3 Methods */}
         <div className="max-w-md mx-auto px-6 mb-10">
           {[
-            {
-              icon: "◎",
-              title: "Escanea el QR en tu zona",
-              desc: "Cada zona tiene un código. Escanea, elige del menú, paga. Tu pedido llega a tu camastro.",
-            },
-            {
-              icon: "◈",
-              title: "Escribe por WhatsApp",
-              desc: "Envía tu pedido al chat. Nuestra IA entiende español e inglés. Natural como hablar con un amigo.",
-            },
-            {
-              icon: "◆",
-              title: "Pide en el Bar",
-              desc: "Di tu número de banda. Sin efectivo, sin tarjeta. Todo se descuenta de tu saldo.",
-            },
+            { icon: "◎", title: t("isla.qr_title"), desc: t("isla.qr_desc") },
+            { icon: "◈", title: t("isla.wa_title"), desc: t("isla.wa_desc") },
+            { icon: "◆", title: t("isla.bar_title"), desc: t("isla.bar_desc") },
           ].map((m, i) => (
             <div
               key={i}
@@ -537,10 +566,10 @@ export default function Home() {
         {/* Zone Selector */}
         <div className="max-w-md mx-auto px-6">
           <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-4">
-            ELIGE TU ZONA Y PIDE
+            {t("isla.choose_zone")}
           </p>
           <div className="grid grid-cols-2 gap-2 mb-3">
-            {ZONES.map((z) => (
+            {zones.map((z) => (
               <Link
                 key={z.name}
                 href={`/order?zone=${encodeURIComponent(z.name)}`}
@@ -555,13 +584,13 @@ export default function Home() {
                   </span>
                 </div>
                 <span className="text-[var(--bb-sand)] text-[11px] font-sans font-semibold group-hover:translate-x-1 transition-transform inline-block">
-                  Pedir →
+                  {t("isla.order_arrow")} →
                 </span>
               </Link>
             ))}
             {/* WhatsApp full-width */}
             <a
-              href="https://wa.me/573151134606?text=Hola%20quiero%20pedir"
+              href={`https://wa.me/573151134606?text=${t("isla.wa_text")}`}
               target="_blank"
               rel="noopener"
               className="col-span-2 rounded-xl p-4 flex items-center gap-3 hover:brightness-110 transition-all"
@@ -573,10 +602,10 @@ export default function Home() {
               <span className="text-lg">💬</span>
               <div>
                 <div className="text-[#00A884] text-xs font-sans font-semibold">
-                  Pedir por WhatsApp
+                  {t("isla.order_wa")}
                 </div>
                 <div className="text-[var(--bb-muted)] text-[10px] font-sans">
-                  Escribe tu pedido como un mensaje
+                  {t("isla.write_order")}
                 </div>
               </div>
             </a>
@@ -586,29 +615,13 @@ export default function Home() {
         {/* How it works */}
         <div className="max-w-md mx-auto px-6 mt-12">
           <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-6 text-center">
-            CÓMO FUNCIONA
+            {t("isla.how")}
           </p>
           {[
-            [
-              "01",
-              "Llegas al Muelle",
-              "Carga tu saldo con Nequi, tarjeta, Daviplata o efectivo. Recibe tu banda.",
-            ],
-            [
-              "02",
-              "Elige tu Zona",
-              "Playa, piscina, cabaña, bar o terraza. Tu paraíso personal.",
-            ],
-            [
-              "03",
-              "Pide sin Esfuerzo",
-              "QR, WhatsApp, o en el bar con tu banda. Tu pedido llega a ti.",
-            ],
-            [
-              "04",
-              "Disfruta",
-              "Sin cuentas abiertas, sin preocupaciones. Al salir, todo se liquida en el muelle.",
-            ],
+            ["01", t("isla.step1_t"), t("isla.step1_d")],
+            ["02", t("isla.step2_t"), t("isla.step2_d")],
+            ["03", t("isla.step3_t"), t("isla.step3_d")],
+            ["04", t("isla.step4_t"), t("isla.step4_d")],
           ].map(([num, title, desc], i) => (
             <div
               key={i}
@@ -635,7 +648,7 @@ export default function Home() {
         {/* Accepted payments */}
         <div className="max-w-md mx-auto px-6 mt-10 text-center">
           <div className="flex justify-center gap-2 flex-wrap">
-            {["Nequi", "Daviplata", "Visa", "Mastercard", "Efectivo"].map(
+            {["Nequi", "Daviplata", "Visa", "Mastercard", t("isla.cash")].map(
               (m) => (
                 <span
                   key={m}
@@ -647,7 +660,7 @@ export default function Home() {
             )}
           </div>
           <p className="text-[var(--bb-muted)] text-[10px] font-sans mt-3">
-            Procesado de forma segura por Wompi · Bancolombia
+            {t("isla.payment_note")}
           </p>
         </div>
       </section>
@@ -659,29 +672,29 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
             <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-3">
-              GASTRONOMÍA DEL CARIBE
+              {t("menu.label")}
             </p>
             <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
-              Nuestra Carta
+              {t("menu.title")}
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans">
-              Cocina de autor con raíces caribeñas y toques mediterráneos.
+              {t("menu.subtitle")}
             </p>
           </div>
 
           {/* Category Tabs */}
           <div className="flex gap-1 overflow-x-auto pb-3 mb-8 scrollbar-none">
-            {ALL_CATEGORIES.map((cat) => (
+            {ALL_CATEGORIES.map((c) => (
               <button
-                key={cat}
-                onClick={() => setMenuTab(cat)}
+                key={c}
+                onClick={() => setMenuTab(c)}
                 className={`px-4 py-2 rounded-full text-[11px] font-sans font-semibold whitespace-nowrap transition-all ${
-                  menuTab === cat
+                  menuTab === c
                     ? "bg-[rgba(196,168,130,0.15)] text-[var(--bb-sand)]"
                     : "text-[var(--bb-muted)] hover:text-[var(--bb-cream)]"
                 }`}
               >
-                {cat}
+                {catName(c, lang)}
               </button>
             ))}
           </div>
@@ -712,18 +725,18 @@ export default function Home() {
                       {item.name}
                     </h4>
                     <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed">
-                      {item.desc}
+                      {lang === "en" && item.descEn ? item.descEn : item.desc}
                     </p>
                     {(item.chef || item.premium) && (
                       <div className="flex gap-2 mt-2">
                         {item.chef && (
                           <span className="text-[8px] tracking-[1px] font-sans font-semibold px-2 py-0.5 rounded bg-[rgba(196,168,130,0.1)] text-[var(--bb-sand)]">
-                            CHEF&apos;S SELECTION
+                            {t("menu.chef")}
                           </span>
                         )}
                         {item.premium && (
                           <span className="text-[8px] tracking-[1px] font-sans font-semibold px-2 py-0.5 rounded bg-[rgba(196,101,74,0.1)] text-[var(--bb-coral)]">
-                            PREMIUM
+                            {t("menu.premium")}
                           </span>
                         )}
                       </div>
@@ -755,13 +768,13 @@ export default function Home() {
                       )}
                       {item.premium && (
                         <span className="text-[7px] tracking-[1px] font-sans font-semibold px-1.5 py-0.5 rounded bg-[rgba(196,101,74,0.1)] text-[var(--bb-coral)]">
-                          PREMIUM
+                          {t("menu.premium")}
                         </span>
                       )}
                     </div>
-                    {item.desc && (
+                    {(item.desc || item.descEn) && (
                       <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed mt-1">
-                        {item.desc}
+                        {lang === "en" && item.descEn ? item.descEn : item.desc}
                       </p>
                     )}
                   </div>
@@ -774,7 +787,7 @@ export default function Home() {
           )}
 
           <p className="text-[var(--bb-muted)] text-[10px] font-sans text-center mt-8">
-            Precios en COP · Propina sugerida 10% · Menú sujeto a disponibilidad
+            {t("menu.note")}
           </p>
 
           {/* CTA to order */}
@@ -783,7 +796,7 @@ export default function Home() {
               href="/order"
               className="inline-flex items-center gap-2 bg-[var(--bb-sand)] text-[var(--bb-void)] px-8 py-3 rounded-lg text-sm font-bold font-sans hover:brightness-110 transition-all"
             >
-              <span>◎</span> Pedir desde tu Zona
+              <span>◎</span> {t("menu.order_btn")}
             </Link>
           </div>
         </div>
@@ -800,13 +813,13 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-6">
           <div className="text-center mb-10">
             <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-3">
-              GALERÍA
+              {t("gallery.label")}
             </p>
             <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
-              El Reino del Realismo Mágico
+              {t("gallery.title")}
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans">
-              Arquitectura hecha a mano. Mar abierto al horizonte.
+              {t("gallery.subtitle")}
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -817,13 +830,13 @@ export default function Home() {
               >
                 <Image
                   src={img.src}
-                  alt={img.alt}
+                  alt={lang === "en" ? img.altEn : img.alt}
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[rgba(10,9,7,0.6)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                   <p className="text-[var(--bb-cream)] text-xs font-sans">
-                    {img.alt}
+                    {lang === "en" ? img.altEn : img.alt}
                   </p>
                 </div>
               </div>
@@ -849,13 +862,13 @@ export default function Home() {
         <div className="max-w-md mx-auto px-6">
           <div className="text-center mb-8">
             <p className="text-[var(--bb-sand)] text-[9px] tracking-[3px] font-sans font-semibold mb-3">
-              EXPERIENCIA
+              {t("res.label")}
             </p>
             <h2 className="text-3xl font-serif font-light text-[var(--bb-cream)] mb-3">
-              Reservar Mesa
+              {t("res.title")}
             </h2>
             <p className="text-[var(--bb-muted)] text-sm font-sans">
-              Asegura tu lugar en el Reino del Realismo Mágico
+              {t("res.subtitle")}
             </p>
           </div>
           <form
@@ -863,16 +876,16 @@ export default function Home() {
             onSubmit={(e) => {
               e.preventDefault();
               window.open(
-                "https://wa.me/573151134606?text=Hola%20quiero%20reservar",
+                `https://wa.me/573151134606?text=${t("res.wa_text")}`,
                 "_blank",
               );
             }}
           >
             {[
-              { name: "nombre", label: "Nombre Completo", type: "text" },
-              { name: "email", label: "Email", type: "email" },
-              { name: "telefono", label: "Teléfono / WhatsApp", type: "tel" },
-              { name: "fecha", label: "Fecha", type: "date" },
+              { name: "nombre", label: t("res.name"), type: "text" },
+              { name: "email", label: t("res.email"), type: "email" },
+              { name: "telefono", label: t("res.phone"), type: "tel" },
+              { name: "fecha", label: t("res.date"), type: "date" },
             ].map((f) => (
               <div key={f.name}>
                 <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
@@ -888,7 +901,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
-                  Hora
+                  {t("res.time")}
                 </label>
                 <select className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
                   {[
@@ -909,15 +922,15 @@ export default function Home() {
               </div>
               <div>
                 <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
-                  Personas
+                  {t("res.guests")}
                 </label>
                 <select className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
                     <option key={n} value={n}>
-                      {n} {n === 1 ? "persona" : "personas"}
+                      {n} {n === 1 ? t("res.person") : t("res.people")}
                     </option>
                   ))}
-                  <option value="10+">Más de 10</option>
+                  <option value="10+">{t("res.more10")}</option>
                 </select>
               </div>
             </div>
@@ -925,16 +938,16 @@ export default function Home() {
               type="submit"
               className="w-full bg-[var(--bb-sand)] text-[var(--bb-void)] py-3.5 rounded-lg text-sm font-bold font-sans hover:brightness-110 transition-all"
             >
-              Confirmar Reservación
+              {t("res.confirm")}
             </button>
           </form>
           <p className="text-center mt-4 text-[var(--bb-muted)] text-xs font-sans">
-            ¿Prefieres contactarnos directamente?{" "}
+            {t("res.prefer")}{" "}
             <a
               href="https://wa.me/573151134606"
               className="text-[#00A884] font-semibold"
             >
-              Escríbenos por WhatsApp
+              {t("res.wa_link")}
             </a>
           </p>
         </div>
@@ -957,14 +970,12 @@ export default function Home() {
               className="h-8 w-auto mb-4"
             />
             <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed">
-              El Reino del Realismo Mágico. Arquitectura hecha a mano, mar
-              abierto al horizonte. Isla Tierra Bomba, a solo 5 minutos de
-              Cartagena.
+              {t("foot.desc")}
             </p>
           </div>
           <div>
             <h4 className="text-[var(--bb-sand)] text-[9px] tracking-[2px] font-sans font-semibold mb-3">
-              CONTACTO
+              {t("foot.contact")}
             </h4>
             <div className="space-y-2 text-[var(--bb-muted)] text-xs font-sans">
               <a
@@ -975,24 +986,25 @@ export default function Home() {
               </a>
               <p>
                 Isla Tierra Bomba
-                <br />5 min en lancha desde Bocagrande
+                <br />
+                {t("foot.address")}
               </p>
             </div>
           </div>
           <div>
             <h4 className="text-[var(--bb-sand)] text-[9px] tracking-[2px] font-sans font-semibold mb-3">
-              HORARIO
+              {t("foot.hours")}
             </h4>
             <div className="space-y-1 text-[var(--bb-muted)] text-xs font-sans">
-              <p>Lunes – Jueves: 10:00 – 18:00</p>
-              <p>Viernes – Sábado: 10:00 – 22:00</p>
-              <p>Domingo: 10:00 – 20:00</p>
+              <p>{t("foot.mon")}</p>
+              <p>{t("foot.fri")}</p>
+              <p>{t("foot.sun")}</p>
             </div>
           </div>
         </div>
         <div className="max-w-4xl mx-auto px-6 mt-8 pt-6 border-t border-[var(--bb-line)] flex flex-wrap justify-between items-center gap-4">
           <p className="text-[rgba(196,168,130,0.3)] text-[10px] font-sans">
-            © 2026 Bethel Bellini Beach Club
+            &copy; 2026 Bethel Bellini Beach Club
           </p>
           <p className="text-[rgba(196,168,130,0.2)] text-[10px] font-sans">
             Powered by ⬡ MachineMind · ISLA OS
@@ -1007,7 +1019,7 @@ export default function Home() {
         className={`fixed bottom-6 right-5 z-40 flex flex-col items-end gap-2 transition-all duration-500 ${showOrderBanner ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none"}`}
       >
         <a
-          href="https://wa.me/573151134606?text=Hola%20quiero%20pedir"
+          href={`https://wa.me/573151134606?text=${t("isla.wa_text")}`}
           className="w-11 h-11 rounded-full bg-[#00A884] flex items-center justify-center shadow-lg shadow-[rgba(0,168,132,0.25)] hover:scale-110 transition-transform"
         >
           <span className="text-white text-lg">💬</span>
@@ -1016,7 +1028,7 @@ export default function Home() {
           href="/order"
           className="relative order-pulse flex items-center gap-2 bg-[var(--bb-sand)] text-[var(--bb-void)] px-6 py-3 rounded-full shadow-lg shadow-[rgba(196,168,120,0.2)] font-sans text-sm font-bold hover:scale-105 transition-transform"
         >
-          <span>◎</span> PEDIR
+          <span>◎</span> {t("nav.order_short")}
         </Link>
       </div>
     </main>

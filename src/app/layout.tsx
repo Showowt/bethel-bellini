@@ -195,21 +195,15 @@ function JsonLd() {
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday"],
-        opens: "10:00",
-        closes: "18:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Friday", "Saturday"],
-        opens: "10:00",
-        closes: "22:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Sunday",
-        opens: "10:00",
+        dayOfWeek: ["Tuesday", "Wednesday", "Thursday", "Friday"],
+        opens: "12:00",
         closes: "20:00",
+      },
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Saturday", "Sunday"],
+        opens: "12:00",
+        closes: "22:00",
       },
     ],
     amenityFeature: [
@@ -338,7 +332,7 @@ function JsonLd() {
         name: "¿Cuál es el horario de Bethel Bellini?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Lunes a jueves de 10:00 a 18:00. Viernes y sábado de 10:00 a 22:00. Domingos de 10:00 a 20:00. Los horarios pueden extenderse en fiestas y eventos especiales.",
+          text: "Cerrado los lunes. Martes a viernes de 12:00 PM a 8:00 PM. Sábados y domingos de 12:00 PM a 10:00 PM. Los horarios pueden extenderse en fiestas y eventos especiales.",
         },
       },
       {

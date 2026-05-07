@@ -908,14 +908,15 @@ export default function Home() {
                 </label>
                 <select className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
                   {[
-                    "10:00",
-                    "11:00",
                     "12:00",
                     "13:00",
                     "14:00",
                     "15:00",
                     "16:00",
                     "17:00",
+                    "18:00",
+                    "19:00",
+                    "20:00",
                   ].map((h) => (
                     <option key={h} value={h}>
                       {h}
@@ -997,7 +998,7 @@ export default function Home() {
               },
               {
                 q: "¿Cuál es el horario del beach club?",
-                a: "Lunes a jueves: 10:00 – 18:00. Viernes y sábado: 10:00 – 22:00. Domingos: 10:00 – 20:00. Los horarios se extienden en fiestas y eventos especiales.",
+                a: "Cerrado los lunes. Martes a viernes: 12:00 PM – 8:00 PM. Sábados y domingos: 12:00 PM – 10:00 PM. Los horarios se extienden en fiestas y eventos especiales.",
               },
               {
                 q: "¿Es buen plan para una despedida de solteros en Cartagena?",
@@ -1101,9 +1102,9 @@ export default function Home() {
               HORARIO
             </h4>
             <div className="space-y-1 text-[var(--bb-muted)] text-xs font-sans">
-              <p>Lunes – Jueves: 10:00 – 18:00</p>
-              <p>Viernes – Sábado: 10:00 – 22:00</p>
-              <p>Domingo: 10:00 – 20:00</p>
+              <p>Lunes: Cerrado</p>
+              <p>Martes – Viernes: 12:00 PM – 8:00 PM</p>
+              <p>Sábado – Domingo: 12:00 PM – 10:00 PM</p>
             </div>
           </div>
         </div>

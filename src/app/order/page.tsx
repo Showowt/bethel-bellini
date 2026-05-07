@@ -1,9 +1,10 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useLanguage, LanguageToggle, catName } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
 
 /* ═══════════════════════════════════════════════════
    ISLA OS — Complete Guest Ordering System (Bilingual)
@@ -91,6 +92,13 @@ type GuestSession = {
   balance: number;
   bandId: string;
   zone: string | null;
+  sessionId: string;
+  guestId: string;
+};
+type OrderResult = {
+  orderId: string;
+  orderNumber: string;
+  status: string;
 };
 
 // Zone data with bilingual labels
@@ -128,11 +136,26 @@ function OrderContent() {
 
   const [topUpAmount, setTopUpAmount] = useState<number | null>(null);
   const [showTopUp, setShowTopUp] = useState(false);
+  const [orderResult, setOrderResult] = useState<OrderResult | null>(null);
 
   const catRef = useRef<HTMLDivElement>(null);
 
+  // Register service worker
   useEffect(() => {
-    const on = () => setOnline(true);
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
+  // Online/offline detection + sync
+  useEffect(() => {
+    const on = () => {
+      setOnline(true);
+      // Sync offline orders
+      if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: "SYNC_ORDERS" });
+      }
+    };
     const off = () => setOnline(false);
     window.addEventListener("online", on);
     window.addEventListener("offline", off);
@@ -142,6 +165,25 @@ function OrderContent() {
       window.removeEventListener("offline", off);
     };
   }, []);
+
+  // Cart persistence in localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem("bb-cart");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as CartItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) setCart(parsed);
+      } catch { /* ignore */ }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cart.length > 0) {
+      localStorage.setItem("bb-cart", JSON.stringify(cart));
+    } else {
+      localStorage.removeItem("bb-cart");
+    }
+  }, [cart]);
 
   const hasSetZoneRef = useRef(false);
   useEffect(() => {
@@ -178,47 +220,151 @@ function OrderContent() {
     return "";
   };
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
     const error = validatePhone(phone);
     if (error) {
       setPhoneError(error);
       return;
     }
     setLoading(true);
-    setTimeout(() => {
+    try {
       const cleanPhone = phone.replace(/\D/g, "");
-      const mockSession: GuestSession = {
-        phone: cleanPhone,
-        name: lang === "en" ? "Guest" : "Invitado",
-        balance: Math.floor(Math.random() * 300000) + 100000,
-        bandId: `BB-${Math.floor(Math.random() * 9000 + 1000)}`,
-        zone: initialZone,
-      };
-      setSession(mockSession);
+
+      // Look up existing guest
+      const lookupRes = await fetch(`/api/guests/checkin?phone=${cleanPhone}`);
+      const lookupData = await lookupRes.json();
+
+      if (lookupData.session) {
+        // Existing active session
+        const s = lookupData.session;
+        const g = lookupData.guest || s.guests;
+        setSession({
+          phone: cleanPhone,
+          name: g?.name || (lang === "en" ? "Guest" : "Invitado"),
+          balance: s.balance,
+          bandId: s.band_id,
+          zone: s.zone || initialZone,
+          sessionId: s.id,
+          guestId: s.guest_id || g?.id,
+        });
+        setStep("balance");
+      } else {
+        // New guest — create with auto band
+        const bandId = `BB-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+        const checkinRes = await fetch("/api/guests/checkin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            phone: cleanPhone,
+            country_code: "+57",
+            name: lang === "en" ? "Guest" : "Invitado",
+            band_id: bandId,
+            initial_balance: 0,
+            zone: initialZone || undefined,
+          }),
+        });
+        const checkinData = await checkinRes.json();
+
+        if (!checkinRes.ok) {
+          setPhoneError(checkinData.error || "Error al registrar");
+          setLoading(false);
+          return;
+        }
+
+        setSession({
+          phone: cleanPhone,
+          name: lang === "en" ? "Guest" : "Invitado",
+          balance: 0,
+          bandId: bandId,
+          zone: initialZone,
+          sessionId: checkinData.session?.id || "",
+          guestId: checkinData.guest_id || "",
+        });
+        setStep("balance");
+      }
+    } catch {
+      setPhoneError("Error de conexion. Intenta de nuevo.");
+    } finally {
       setLoading(false);
-      setStep("balance");
-    }, 1500);
+    }
   };
 
-  const handleTopUp = (amount: number) => {
+  const handleTopUp = async (amount: number) => {
     if (!session) return;
     setLoading(true);
-    setTimeout(() => {
-      setSession({ ...session, balance: session.balance + amount });
+    try {
+      const res = await fetch("/api/guests/topup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.sessionId,
+          amount,
+          method: "cash",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSession({ ...session, balance: data.new_balance });
+      }
       setShowTopUp(false);
       setTopUpAmount(null);
+    } catch {
+      // Silently fail — user can retry
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
-  const submitOrder = () => {
+  const submitOrder = async () => {
     if (!session) return;
     setLoading(true);
-    setTimeout(() => {
-      setSession({ ...session, balance: session.balance - total });
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          session_id: session.sessionId,
+          zone: session.zone || "Bar del Mar",
+          items: cart.map((c) => ({
+            item_name: c.name,
+            item_price: c.price,
+            quantity: c.qty,
+          })),
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        setSession({ ...session, balance: data.new_balance });
+        setOrderResult({
+          orderId: data.order?.id || "",
+          orderNumber: data.order?.order_number || "BB-0000",
+          status: "pending",
+        });
+        setCart([]);
+        localStorage.removeItem("bb-cart");
+        setStep("done");
+      } else if (res.status === 402) {
+        // Insufficient balance — show top-up prompt
+        setShowTopUp(true);
+      } else {
+        console.error("[Order] Submit error:", data.error);
+      }
+    } catch {
+      // If offline, the SW will queue the order
+      if (!navigator.onLine) {
+        setCart([]);
+        localStorage.removeItem("bb-cart");
+        setOrderResult({
+          orderId: "offline",
+          orderNumber: "BB-OFFLINE",
+          status: "queued",
+        });
+        setStep("done");
+      }
+    } finally {
       setLoading(false);
-      setStep("done");
-    }, 2200);
+    }
   };
 
   // Helper to get description in correct language
@@ -525,31 +671,41 @@ function OrderContent() {
   // STEP 6: ORDER DONE
   // ══════════════════════════════════════════════════════════════════
   if (step === "done" && session) {
-    const orderId = `BB-${Math.floor(Math.random() * 9000 + 1000)}`;
+    const displayOrderNumber = orderResult?.orderNumber || "BB-0000";
+    const isOffline = orderResult?.orderId === "offline";
+
     return (
       <div className="min-h-screen bg-[var(--bb-void)] flex items-center justify-center px-5">
         <div className="max-w-sm w-full text-center">
           <div
             className="w-20 h-20 rounded-full mx-auto mb-5 flex items-center justify-center"
             style={{
-              background: "rgba(90,158,111,0.12)",
-              border: "1px solid rgba(90,158,111,0.3)",
+              background: isOffline ? "rgba(196,154,58,0.12)" : "rgba(90,158,111,0.12)",
+              border: isOffline ? "1px solid rgba(196,154,58,0.3)" : "1px solid rgba(90,158,111,0.3)",
             }}
           >
-            <span className="text-[var(--bb-ok)] text-3xl">✓</span>
+            <span className={isOffline ? "text-[var(--bb-warn)] text-3xl" : "text-[var(--bb-ok)] text-3xl"}>
+              {isOffline ? "◎" : "✓"}
+            </span>
           </div>
           <h2 className="text-[var(--bb-cream)] text-2xl font-serif font-light mb-1">
-            {t("o.confirmed")}
+            {isOffline ? (lang === "en" ? "Order Queued" : "Pedido en Cola") : t("o.confirmed")}
           </h2>
           <p className="text-[var(--bb-muted)] text-sm font-sans mb-6">
-            {t("o.preparing")}
+            {isOffline
+              ? (lang === "en" ? "Will be sent when you reconnect" : "Se enviara al reconectar")
+              : t("o.preparing")}
           </p>
+
+          {/* Real-time status tracker */}
+          {!isOffline && (
+            <OrderStatusTracker orderId={orderResult?.orderId || ""} />
+          )}
 
           <div className="glass-panel rounded-2xl p-5 text-left mb-6 space-y-3">
             {[
-              [t("o.order_id"), orderId, "var(--bb-sand)"],
+              [t("o.order_id"), displayOrderNumber, "var(--bb-sand)"],
               [t("o.zone"), session.zone || "N/A", "var(--bb-coral)"],
-              [t("o.total"), fmt(total), "var(--bb-cream)"],
               [t("o.new_bal"), fmt(session.balance), "var(--bb-ok)"],
               [t("o.est_time"), t("o.est_min"), "var(--bb-cream)"],
             ].map(([l, v, c]) => (
@@ -571,34 +727,15 @@ function OrderContent() {
           </div>
 
           <div className="glass-panel rounded-xl p-4 mb-6 text-left">
-            <p className="text-[var(--bb-sand)] text-[9px] tracking-[1px] font-sans font-semibold mb-2">
-              {t("o.your_order_label")}
-            </p>
-            {cart.map((c) => (
-              <div
-                key={c.name}
-                className="flex justify-between py-1 text-xs font-sans"
-              >
-                <span className="text-[var(--bb-cream)]">
-                  {c.qty}&times; {c.name}
-                </span>
-                <span className="text-[var(--bb-muted)]">
-                  {fmt(c.price * c.qty)}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="glass-panel rounded-xl p-4 mb-6 text-left">
             <p className="text-[var(--bb-muted)] text-xs font-sans leading-relaxed">
-              🏃 {t("o.runner")}
+              {t("o.runner")}
             </p>
           </div>
 
           <div className="flex gap-2">
             <button
               onClick={() => {
-                setCart([]);
+                setOrderResult(null);
                 setStep("menu");
               }}
               className="flex-1 glass-panel py-3 rounded-lg text-[var(--bb-cream)] text-sm font-sans font-semibold"
@@ -1033,6 +1170,82 @@ function OrderContent() {
   }
 
   return null;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// REAL-TIME ORDER STATUS TRACKER
+// ══════════════════════════════════════════════════════════════════
+
+function OrderStatusTracker({ orderId }: { orderId: string }) {
+  const { lang } = useLanguage();
+  const [status, setStatus] = useState<string>("pending");
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`order-${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "orders",
+          filter: `id=eq.${orderId}`,
+        },
+        (payload) => {
+          const newStatus = (payload.new as { status: string }).status;
+          setStatus(newStatus);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [orderId]);
+
+  const steps = [
+    { key: "pending", es: "Recibido", en: "Received" },
+    { key: "preparing", es: "Preparando", en: "Preparing" },
+    { key: "ready", es: "Listo", en: "Ready" },
+    { key: "delivered", es: "Entregado", en: "Delivered" },
+  ];
+
+  const currentIdx = steps.findIndex((s) => s.key === status);
+
+  return (
+    <div className="glass-panel rounded-2xl p-4 mb-6">
+      <div className="flex items-center justify-between">
+        {steps.map((s, i) => (
+          <div key={s.key} className="flex items-center">
+            <div className="text-center">
+              <div
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-sans font-bold mb-1 transition-all ${
+                  i <= currentIdx
+                    ? "bg-[var(--bb-ok)] text-[var(--bb-void)]"
+                    : "bg-[var(--bb-faint)] text-[var(--bb-muted)]"
+                }`}
+              >
+                {i <= currentIdx ? "✓" : i + 1}
+              </div>
+              <span className={`text-[9px] font-sans ${i <= currentIdx ? "text-[var(--bb-ok)]" : "text-[var(--bb-muted)]"}`}>
+                {lang === "en" ? s.en : s.es}
+              </span>
+            </div>
+            {i < steps.length - 1 && (
+              <div
+                className={`w-6 h-0.5 mx-1 mt-[-12px] transition-all ${
+                  i < currentIdx ? "bg-[var(--bb-ok)]" : "bg-[var(--bb-line)]"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 // ══════════════════════════════════════════════════════════════════

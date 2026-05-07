@@ -27,11 +27,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        "bg-gradient-to-r from-bethel-cyan to-teal-400 text-black hover:from-cyan-300 hover:to-teal-300 btn-glow",
+        "bg-[var(--bb-sand)] text-[var(--bb-void)] hover:brightness-110",
       secondary:
-        "bg-gradient-to-r from-bethel-orange to-bethel-coral text-white hover:from-red-500 hover:to-pink-400",
+        "bg-[var(--bb-coral)] text-white hover:brightness-110",
       outline:
-        "bg-transparent border-2 border-bethel-cyan text-bethel-cyan hover:bg-bethel-cyan hover:text-black",
+        "bg-transparent border border-[var(--bb-sand)] text-[var(--bb-sand)] hover:bg-[rgba(196,168,130,0.1)]",
     };
 
     const sizes = {

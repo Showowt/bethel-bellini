@@ -1,8 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useLanguage, LanguageToggle, catName, HOME_ZONES } from "@/lib/i18n";
+import { useLanguage, LanguageToggle, catName, HOME_ZONES, type Lang } from "@/lib/i18n";
 
 /* ═══════════════════════════════════════════════════════════════
    BETHEL BELLINI — Main Site with Integrated ISLA OS (Bilingual)
@@ -413,7 +413,7 @@ export default function Home() {
       >
         <div className="absolute inset-0 z-0">
           <Image
-            src="/hero-bg.jpg"
+            src="/hero-bg.webp"
             alt="Bethel Bellini Beach Club"
             fill
             className="object-cover"
@@ -871,76 +871,7 @@ export default function Home() {
               {t("res.subtitle")}
             </p>
           </div>
-          <form
-            className="space-y-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              window.open(
-                `https://wa.me/573151134606?text=${t("res.wa_text")}`,
-                "_blank",
-              );
-            }}
-          >
-            {[
-              { name: "nombre", label: t("res.name"), type: "text" },
-              { name: "email", label: t("res.email"), type: "email" },
-              { name: "telefono", label: t("res.phone"), type: "tel" },
-              { name: "fecha", label: t("res.date"), type: "date" },
-            ].map((f) => (
-              <div key={f.name}>
-                <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
-                  {f.label}
-                </label>
-                <input
-                  type={f.type}
-                  required
-                  className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none focus:border-[var(--bb-sand)] transition-colors"
-                />
-              </div>
-            ))}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
-                  {t("res.time")}
-                </label>
-                <select className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
-                  {[
-                    "10:00",
-                    "11:00",
-                    "12:00",
-                    "13:00",
-                    "14:00",
-                    "15:00",
-                    "16:00",
-                    "17:00",
-                  ].map((h) => (
-                    <option key={h} value={h}>
-                      {h}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
-                  {t("res.guests")}
-                </label>
-                <select className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-                    <option key={n} value={n}>
-                      {n} {n === 1 ? t("res.person") : t("res.people")}
-                    </option>
-                  ))}
-                  <option value="10+">{t("res.more10")}</option>
-                </select>
-              </div>
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-[var(--bb-sand)] text-[var(--bb-void)] py-3.5 rounded-lg text-sm font-bold font-sans hover:brightness-110 transition-all"
-            >
-              {t("res.confirm")}
-            </button>
-          </form>
+          <ReservationForm t={t} lang={lang} />
           <p className="text-center mt-4 text-[var(--bb-muted)] text-xs font-sans">
             {t("res.prefer")}{" "}
             <a
@@ -1032,5 +963,135 @@ export default function Home() {
         </Link>
       </div>
     </main>
+  );
+}
+
+function ReservationForm({ t, lang }: { t: (k: string) => string; lang: Lang }) {
+  const [formState, setFormState] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setFormState("loading");
+    setErrorMsg("");
+
+    const fd = new FormData(e.currentTarget);
+    const name = fd.get("nombre") as string;
+    const email = fd.get("email") as string;
+    const phone = fd.get("telefono") as string;
+    const date = fd.get("fecha") as string;
+    const time = fd.get("hora") as string;
+    const guests = parseInt(fd.get("personas") as string, 10) || 2;
+
+    try {
+      const res = await fetch("/api/reservations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email: email || null,
+          phone: phone.replace(/\D/g, ""),
+          country_code: "+57",
+          date,
+          time,
+          guests,
+        }),
+      });
+
+      if (res.ok) {
+        setFormState("success");
+        formRef.current?.reset();
+      } else {
+        const data = await res.json();
+        setErrorMsg(data.error || "Error");
+        setFormState("error");
+      }
+    } catch {
+      setErrorMsg(lang === "en" ? "Connection error. Try again." : "Error de conexion. Intenta de nuevo.");
+      setFormState("error");
+    }
+  };
+
+  if (formState === "success") {
+    return (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: "rgba(90,158,111,0.12)", border: "1px solid rgba(90,158,111,0.3)" }}>
+          <span className="text-[var(--bb-ok)] text-2xl">✓</span>
+        </div>
+        <h3 className="text-lg font-serif font-light text-[var(--bb-cream)] mb-2">
+          {lang === "en" ? "Reservation Sent!" : "Reservacion Enviada!"}
+        </h3>
+        <p className="text-[var(--bb-muted)] text-sm font-sans mb-4">
+          {lang === "en" ? "You'll receive a confirmation via WhatsApp" : "Recibiras confirmacion por WhatsApp"}
+        </p>
+        <button
+          onClick={() => setFormState("idle")}
+          className="glass-panel px-6 py-2 rounded-lg text-[var(--bb-cream)] text-sm font-sans font-semibold"
+        >
+          {lang === "en" ? "Make Another" : "Hacer Otra"}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form ref={formRef} className="space-y-4" onSubmit={handleSubmit}>
+      {[
+        { name: "nombre", label: t("res.name"), type: "text" },
+        { name: "email", label: t("res.email"), type: "email" },
+        { name: "telefono", label: t("res.phone"), type: "tel" },
+        { name: "fecha", label: t("res.date"), type: "date" },
+      ].map((f) => (
+        <div key={f.name}>
+          <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
+            {f.label}
+          </label>
+          <input
+            name={f.name}
+            type={f.type}
+            required={f.name !== "email"}
+            className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none focus:border-[var(--bb-sand)] transition-colors"
+          />
+        </div>
+      ))}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
+            {t("res.time")}
+          </label>
+          <select name="hora" className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
+            {["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"].map((h) => (
+              <option key={h} value={h}>{h}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-[var(--bb-muted)] text-xs font-sans font-medium mb-1.5 block">
+            {t("res.guests")}
+          </label>
+          <select name="personas" className="w-full bg-[var(--bb-faint)] border border-[var(--bb-line)] rounded-lg px-4 py-3 text-[var(--bb-cream)] text-sm font-sans outline-none">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
+              <option key={n} value={n}>{n} {n === 1 ? t("res.person") : t("res.people")}</option>
+            ))}
+            <option value="10+">{t("res.more10")}</option>
+          </select>
+        </div>
+      </div>
+      {formState === "error" && (
+        <p className="text-[var(--bb-coral)] text-xs font-sans text-center animate-fade-in">
+          {errorMsg}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={formState === "loading"}
+        className="w-full bg-[var(--bb-sand)] text-[var(--bb-void)] py-3.5 rounded-lg text-sm font-bold font-sans hover:brightness-110 transition-all disabled:opacity-50"
+      >
+        {formState === "loading"
+          ? (lang === "en" ? "Sending..." : "Enviando...")
+          : t("res.confirm")}
+      </button>
+    </form>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import type { Reservation } from "@/lib/supabase/types";
 
@@ -22,6 +24,17 @@ export default function AdminDashboard() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>("all");
+  const [authenticated, setAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const pin = sessionStorage.getItem("bb-admin-pin");
+    if (!pin) {
+      router.push("/admin/login");
+      return;
+    }
+    setAuthenticated(true);
+  }, [router]);
 
   const fetchReservations = async () => {
     try {
@@ -40,8 +53,10 @@ export default function AdminDashboard() {
   };
 
   useEffect(() => {
-    fetchReservations();
-  }, [filter]);
+    if (authenticated) {
+      fetchReservations();
+    }
+  }, [filter, authenticated]);
 
   const updateStatus = async (
     id: string,
@@ -59,6 +74,14 @@ export default function AdminDashboard() {
     }
   };
 
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bb-void)" }}>
+        <div className="animate-spin w-8 h-8 border-2 border-[var(--bb-sand)] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
   const todayCount = reservations.filter(
     (r) => r.date === new Date().toISOString().split("T")[0],
   ).length;
@@ -72,40 +95,50 @@ export default function AdminDashboard() {
   ).length;
 
   return (
-    <div className="min-h-screen bg-bethel-black p-6">
+    <div className="min-h-screen p-6" style={{ background: "var(--bb-void)" }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold gradient-text">
+            <h1 className="text-3xl font-serif font-light text-[var(--bb-cream)]">
               Bethel Bellini Admin
             </h1>
-            <p className="text-white/50 mt-1">Panel de Reservaciones</p>
+            <p className="text-[var(--bb-muted)] text-sm font-sans mt-1">
+              Panel de Reservaciones
+            </p>
           </div>
-          <Button onClick={fetchReservations} variant="outline" size="sm">
-            Actualizar
-          </Button>
+          <div className="flex gap-2">
+            <Link
+              href="/admin/kitchen"
+              className="px-4 py-2 text-xs font-sans font-semibold text-[var(--bb-void)] bg-[var(--bb-coral)] hover:brightness-110 transition-all"
+            >
+              Cocina
+            </Link>
+            <Button onClick={fetchReservations} variant="outline" size="sm">
+              Actualizar
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="glass p-4">
-            <p className="text-white/50 text-sm">Total</p>
-            <p className="text-3xl font-bold text-white">
+          <div className="glass-panel p-4 rounded-lg">
+            <p className="text-[var(--bb-muted)] text-sm font-sans">Total</p>
+            <p className="text-3xl font-serif font-light text-[var(--bb-cream)]">
               {reservations.length}
             </p>
           </div>
-          <div className="glass p-4">
-            <p className="text-white/50 text-sm">Hoy</p>
-            <p className="text-3xl font-bold text-bethel-cyan">{todayCount}</p>
+          <div className="glass-panel p-4 rounded-lg">
+            <p className="text-[var(--bb-muted)] text-sm font-sans">Hoy</p>
+            <p className="text-3xl font-serif font-light text-[var(--bb-ocean)]">{todayCount}</p>
           </div>
-          <div className="glass p-4">
-            <p className="text-white/50 text-sm">Pendientes</p>
-            <p className="text-3xl font-bold text-yellow-400">{pendingCount}</p>
+          <div className="glass-panel p-4 rounded-lg">
+            <p className="text-[var(--bb-muted)] text-sm font-sans">Pendientes</p>
+            <p className="text-3xl font-serif font-light text-[var(--bb-warn)]">{pendingCount}</p>
           </div>
-          <div className="glass p-4">
-            <p className="text-white/50 text-sm">Confirmadas</p>
-            <p className="text-3xl font-bold text-green-400">
+          <div className="glass-panel p-4 rounded-lg">
+            <p className="text-[var(--bb-muted)] text-sm font-sans">Confirmadas</p>
+            <p className="text-3xl font-serif font-light text-[var(--bb-ok)]">
               {confirmedCount}
             </p>
           </div>
@@ -118,10 +151,10 @@ export default function AdminDashboard() {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-4 py-2 text-sm whitespace-nowrap transition-colors ${
+                className={`px-4 py-2 text-sm font-sans whitespace-nowrap transition-colors ${
                   filter === status
-                    ? "bg-bethel-cyan text-black"
-                    : "bg-white/5 text-white/70 hover:bg-white/10"
+                    ? "bg-[var(--bb-sand)] text-[var(--bb-void)]"
+                    : "bg-[var(--bb-faint)] text-[var(--bb-muted)] hover:text-[var(--bb-cream)]"
                 }`}
               >
                 {status === "all" ? "Todas" : STATUS_LABELS[status]}
@@ -132,52 +165,52 @@ export default function AdminDashboard() {
 
         {/* Table */}
         {loading ? (
-          <div className="glass p-8 text-center">
-            <div className="animate-spin w-8 h-8 border-2 border-bethel-cyan border-t-transparent rounded-full mx-auto" />
+          <div className="glass-panel p-8 text-center rounded-lg">
+            <div className="animate-spin w-8 h-8 border-2 border-[var(--bb-sand)] border-t-transparent rounded-full mx-auto" />
           </div>
         ) : reservations.length === 0 ? (
-          <div className="glass p-8 text-center text-white/50">
+          <div className="glass-panel p-8 text-center text-[var(--bb-muted)] font-sans rounded-lg">
             No hay reservaciones
           </div>
         ) : (
-          <div className="glass overflow-hidden">
+          <div className="glass-panel overflow-hidden rounded-lg">
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-white/5">
+                <thead className="bg-[var(--bb-faint)]">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
                       Nombre
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
-                      Teléfono
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
+                      Telefono
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
                       Fecha
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
                       Hora
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
                       Personas
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
                       Estado
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-white/50 uppercase">
+                    <th className="px-4 py-3 text-left text-xs font-sans font-medium text-[var(--bb-muted)] uppercase">
                       Acciones
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-[var(--bb-line)]">
                   {reservations.map((reservation) => (
-                    <tr key={reservation.id} className="hover:bg-white/5">
+                    <tr key={reservation.id} className="hover:bg-[var(--bb-faint)]">
                       <td className="px-4 py-4">
                         <div>
-                          <p className="font-medium text-white">
+                          <p className="font-sans font-medium text-[var(--bb-cream)]">
                             {reservation.name}
                           </p>
                           {reservation.email && (
-                            <p className="text-sm text-white/50">
+                            <p className="text-sm text-[var(--bb-muted)] font-sans">
                               {reservation.email}
                             </p>
                           )}
@@ -185,26 +218,26 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-4 py-4">
                         <a
-                          href={`https://wa.me/${reservation.country_code}${reservation.phone.replace(/\D/g, "")}`}
+                          href={`https://wa.me/${reservation.country_code.replace("+", "")}${reservation.phone.replace(/\D/g, "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-bethel-cyan hover:underline"
+                          className="text-[#00A884] font-sans hover:underline"
                         >
                           {reservation.country_code} {reservation.phone}
                         </a>
                       </td>
-                      <td className="px-4 py-4 text-white/70">
+                      <td className="px-4 py-4 text-[var(--bb-muted)] font-sans">
                         {reservation.date}
                       </td>
-                      <td className="px-4 py-4 text-white/70">
+                      <td className="px-4 py-4 text-[var(--bb-muted)] font-sans">
                         {reservation.time}
                       </td>
-                      <td className="px-4 py-4 text-white/70">
+                      <td className="px-4 py-4 text-[var(--bb-muted)] font-sans">
                         {reservation.guests}
                       </td>
                       <td className="px-4 py-4">
                         <span
-                          className={`px-2 py-1 text-xs border ${STATUS_COLORS[reservation.status]}`}
+                          className={`px-2 py-1 text-xs font-sans border ${STATUS_COLORS[reservation.status]}`}
                         >
                           {STATUS_LABELS[reservation.status]}
                         </span>
@@ -217,7 +250,7 @@ export default function AdminDashboard() {
                                 onClick={() =>
                                   updateStatus(reservation.id, "confirmed")
                                 }
-                                className="text-xs px-2 py-1 bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                                className="text-xs font-sans px-2 py-1 bg-green-500/20 text-green-300 hover:bg-green-500/30"
                               >
                                 Confirmar
                               </button>
@@ -225,7 +258,7 @@ export default function AdminDashboard() {
                                 onClick={() =>
                                   updateStatus(reservation.id, "cancelled")
                                 }
-                                className="text-xs px-2 py-1 bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                                className="text-xs font-sans px-2 py-1 bg-red-500/20 text-red-300 hover:bg-red-500/30"
                               >
                                 Cancelar
                               </button>
@@ -236,7 +269,7 @@ export default function AdminDashboard() {
                               onClick={() =>
                                 updateStatus(reservation.id, "completed")
                               }
-                              className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+                              className="text-xs font-sans px-2 py-1 bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
                             >
                               Completar
                             </button>
